@@ -78,7 +78,7 @@ export async function getUser(id: string) {
     .from("profiles")
     .select(`*, company:companies!profiles_company_id_fkey(name, timezone), branch:branches!profiles_branch_id_fkey(name),
       department:departments!profiles_department_id_fkey(name), position:positions!profiles_position_id_fkey(name),
-      manager:profiles!profiles_manager_id_fkey(id, full_name)`)
+      manager:manager_id(id, full_name)`)
     .eq("id", id)
     .maybeSingle();
   if (error) throw error;

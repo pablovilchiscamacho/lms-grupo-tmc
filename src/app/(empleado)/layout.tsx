@@ -19,7 +19,8 @@ export default async function EmployeeLayout({ children }: LayoutProps<"/">) {
   const isAdmin = ctx.permissions.length > 0 || ctx.requires_mfa;
   return (
     <div className="min-h-screen pb-20 md:pb-0">
-      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
+      {/* Sin backdrop-blur: crearía un contenedor para el menú fijo inferior del celular y lo subiría aquí. */}
+      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4">
           <Link href="/" className="text-brand-900"><BrandMark /></Link>
           <EmployeeNav items={ITEMS} />

@@ -34,7 +34,7 @@ export default async function UsersPage({ searchParams }: PageProps<"/admin/usua
         </>}
       />
 
-      <form className="card mb-4 grid gap-3 p-3 sm:grid-cols-2 lg:grid-cols-7" role="search" aria-label="Filtrar usuarios">
+      <form className="card mb-4 grid gap-3 p-3 sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-7" role="search" aria-label="Filtrar usuarios">
         <div className="relative sm:col-span-2">
           <Search className="pointer-events-none absolute top-2.5 left-3 size-4 text-slate-400" aria-hidden />
           <label htmlFor="q" className="sr-only">Buscar</label>
@@ -46,7 +46,7 @@ export default async function UsersPage({ searchParams }: PageProps<"/admin/usua
         <Select name="estado" label="Estado" value={filters.status} options={Object.entries(STATUS_LABEL)} />
         <Select name="rol" label="Rol" value={filters.role} options={roles.map((r) => [r.key, r.name])} />
         {filters.sin && <input type="hidden" name="sin" value={filters.sin} />}
-        <div className="flex gap-2 sm:col-span-2 lg:col-span-7 lg:justify-end">
+        <div className="flex gap-2 sm:col-span-2 lg:col-span-4 2xl:col-span-7 lg:justify-end">
           {filters.sin && <Badge tone="amber">Filtro: sin {filters.sin}</Badge>}
           <Link href="/admin/usuarios" className="btn-ghost">Limpiar</Link>
           <button className="btn-secondary">Aplicar filtros</button>
