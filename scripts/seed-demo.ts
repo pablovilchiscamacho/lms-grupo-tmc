@@ -12,7 +12,7 @@ if (process.env.APP_ENV === "production") {
   process.exit(1);
 }
 const sb = adminClient();
-const PASSWORD = process.env.SEED_PASSWORD ?? `Demo-${randomBytes(4).toString("hex")}`;
+const PASSWORD = process.env.SEED_PASSWORD || `Demo-${randomBytes(4).toString("hex")}`; // "" en .env también cuenta como vacío
 const sinMfa = process.argv.includes("--sin-mfa");
 
 const COMPANIES = [
@@ -73,7 +73,13 @@ async function main() {
     const m = org[u.co];
     const authEmail = u.email ?? `demo-${u.emp}@users.lms.internal`;
     const found = maybe(await sb.from("profiles").select("id").eq("auth_email", authEmail).maybeSingle(), "perfil");
-    if (found) { created[u.key] = found.id; continue; }
+    if (found) {
+      // Re-ejecución: deja a los usuarios demo con la contraseña de esta corrida.
+      created[u.key] = found.id;
+      const r = await sb.auth.admin.updateUserById(found.id, { password: PASSWORD });
+      if (r.error) { console.error(`✗ contraseña ${authEmail}:`, r.error); process.exit(1); }
+      continue;
+    }
     const { data, error } = await sb.auth.admin.createUser({ email: authEmail, password: PASSWORD, email_confirm: true });
     if (error || !data.user) { console.error(`✗ Auth ${authEmail}:`, error); process.exit(1); }
     created[u.key] = data.user.id;
