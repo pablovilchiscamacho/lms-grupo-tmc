@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# plantilla de variables (sin secretos)
+!.env.example
+
+# supabase cli
+supabase/.temp/
+supabase/.branches/

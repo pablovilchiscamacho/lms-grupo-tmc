@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LMS Grupo TMC
 
-## Getting Started
+Plataforma corporativa de capacitación para Grupo TMC (EA Logística, TMC, TMCa y futuras empresas): usuarios, cursos, exámenes, asignaciones, cumplimiento, certificados y trazabilidad ISO.
 
-First, run the development server:
+**Estado:** Fase 1 (Fundación) terminada. Ver el [roadmap](docs/00-PROPUESTA.md#8-roadmap-de-implementación).
+
+## Stack
+Next.js 16 · React 19 · TypeScript · Tailwind 4 · Supabase (Postgres + Auth + Storage + pg_cron) · Vercel.
+
+## Arranque rápido (desarrollo)
 
 ```bash
+npm install
+```
+```bash
+cp .env.example .env.local
+```
+Llena las llaves del proyecto de Supabase de desarrollo y sigue [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) §1: migraciones, ajustes de Auth y datos demo.
+```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Comandos
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Comando | Qué hace |
+|---|---|
+| `npm run dev` | Servidor de desarrollo |
+| `npm test` | Pruebas (incluye RLS y funciones de la base, sin Docker) |
+| `npm run typecheck` · `npm run lint` | Tipos y estilo |
+| `npm run build` | Compilación de producción |
+| `npm run db:push` | Aplica las migraciones al proyecto de Supabase enlazado |
+| `npm run db:types` | Genera los tipos de TypeScript desde la base |
+| `npm run seed:demo` | Datos demo (solo desarrollo) |
+| `npm run bootstrap:admin -- …` | Crea el primer Super Admin |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Documentación
 
-## Learn More
+| Documento | Contenido |
+|---|---|
+| [00-PROPUESTA](docs/00-PROPUESTA.md) | Decisiones aprobadas, MVP y roadmap |
+| [ARCHITECTURE](docs/ARCHITECTURE.md) | Capas, patrones de acceso a datos y carpetas |
+| [DATABASE](docs/DATABASE.md) | Modelo de datos y ERD |
+| [SECURITY](docs/SECURITY.md) | Roles, permisos y RLS |
+| [API](docs/API.md) | Server Actions y RPC |
+| [DEPLOYMENT](docs/DEPLOYMENT.md) | Puesta en marcha, paso a paso |
+| [TESTING](docs/TESTING.md) | Pruebas y cobertura |
+| [ADMIN_GUIDE](docs/ADMIN_GUIDE.md) · [USER_GUIDE](docs/USER_GUIDE.md) | Guías de uso |
 
-To learn more about Next.js, take a look at the following resources:
+## Estructura
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+supabase/migrations/   SQL versionado (tablas, RLS, funciones, triggers)
+src/app/               Rutas: (auth) entrar…, (empleado) /, admin/…
+src/features/<dominio> actions.ts · queries.ts · schemas.ts · componentes
+src/lib/               supabase (server/client/admin), auth, errores, formato
+tests/db/              Pruebas de base de datos (PGlite)
+scripts/               Datos demo y primer administrador
+```
