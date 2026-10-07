@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ClipboardList, Users } from "lucide-react";
+import { ArrowLeft, Users } from "lucide-react";
 import { requirePermission, can } from "@/lib/auth/session";
 import { getCourse, getVersionTree, listParticipants } from "@/features/courses/queries";
 import { getOrgOptions } from "@/features/org/queries";
@@ -11,6 +11,8 @@ import { ContentBuilder } from "@/features/courses/ui/content-builder";
 import { PublishPanel } from "@/features/courses/ui/publish-panel";
 import { Stepper, type StepKey } from "@/features/courses/ui/stepper";
 import { conversionEnabled } from "@/lib/conversion";
+import { getExams, listQuestionCategories } from "@/features/exams/queries";
+import { ExamBuilder } from "@/features/exams/ui/exam-builder";
 import { COURSE_STATUS, fmtDate, fmtDuration } from "@/lib/format";
 import { Badge, Card, EmptyState } from "@/components/ui";
 
@@ -29,6 +31,7 @@ export default async function CoursePage({ params, searchParams }: PageProps<"/a
   const shown = open ?? published ?? course.versions[0];
   const [label, tone] = COURSE_STATUS[course.status] ?? [course.status, "slate"];
 
+  const [exams, categories] = step === "examen" ? await Promise.all([getExams(shown.id), listQuestionCategories()]) : [[], []];
   const [tree, org, issues, participants] = await Promise.all([
     step === "contenido" ? getVersionTree(shown.id) : Promise.resolve([]),
     step === "datos" || step === "publicar" ? getOrgOptions() : Promise.resolve(null),
@@ -72,9 +75,8 @@ export default async function CoursePage({ params, searchParams }: PageProps<"/a
       )}
 
       {step === "examen" && (
-        <EmptyState icon={<ClipboardList className="size-8" />} title="El examen se agrega en la Fase 3">
-          Podrás armarlo aquí mismo, o cargar todas las preguntas desde un Excel. Mientras tanto, un curso sin examen se da por terminado al completar sus lecciones.
-        </EmptyState>
+        <ExamBuilder courseId={course.id} courseCode={course.code} versionId={shown.id} exams={exams} categories={categories}
+          locked={shown.status !== "draft" || !can(ctx, "exams.write")} />
       )}
 
       {step === "publicar" && org && (
@@ -106,7 +108,9 @@ export default async function CoursePage({ params, searchParams }: PageProps<"/a
                         <div className="flex items-center gap-2"><div className="h-1.5 w-24 overflow-hidden rounded-full bg-slate-100"><div className="h-full bg-brand-600" style={{ width: `${p.progress_pct}%` }} /></div><span className="text-xs tabular-nums text-slate-600">{Math.round(p.progress_pct)}%</span></div>
                       </td>
                       <td className="td">
-                        {p.state === "cancelled" ? <Badge>Cancelado</Badge> : p.progress_status === "completed" ? <Badge tone="green">Completado</Badge>
+                        {p.state === "cancelled" ? <Badge>Cancelado</Badge> : p.result === "passed" ? <Badge tone="green">Aprobado</Badge>
+                          : p.result === "failed" ? <Badge tone="red">Reprobado</Badge> : p.result === "pending_review" ? <Badge tone="amber">En revisión</Badge>
+                          : p.progress_status === "completed" ? <Badge tone="green">Completado</Badge>
                           : overdue ? <Badge tone="red">Vencido</Badge> : p.progress_status === "in_progress" ? <Badge tone="blue">En progreso</Badge> : <Badge>Pendiente</Badge>}
                       </td>
                       <td className="td">{p.version ? `v${p.version.version_number}` : "—"}</td>

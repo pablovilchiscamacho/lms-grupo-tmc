@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useCallback, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
-import { CheckCircle2, ChevronLeft, ChevronRight, Circle, CircleDot, Download, ExternalLink, List, Loader2, Lock, X } from "lucide-react";
+import { CheckCircle2, ChevronLeft, ChevronRight, Circle, CircleDot, ClipboardList, Clock, Download, ExternalLink, List, Loader2, Lock, X } from "lucide-react";
 import { Alert } from "@/components/ui";
 import type { Player, PlayerContent, PlayerLesson } from "../queries";
 import { completeLesson } from "../actions";
@@ -35,6 +35,7 @@ export function PlayerView({ player, lessonId }: { player: Player; lessonId: str
   const [actionError, setActionError] = useState<string | null>(null);
   const nextLocked = next && player.sequential && lesson.is_required && !done;
   const base = `/cursos/${player.enrollment.id}`;
+  const pendingExam = player.exams.find((x) => !x.passed);
 
   const Sidebar = (
     <nav aria-label="Contenido del curso" className="space-y-4">
@@ -61,6 +62,22 @@ export function PlayerView({ player, lessonId }: { player: Player; lessonId: str
           </ul>
         </div>
       ))}
+      {player.exams.length > 0 && (
+        <div>
+          <p className="mb-1.5 text-xs font-semibold tracking-wide text-slate-500 uppercase">Evaluación</p>
+          <ul className="space-y-0.5">
+            {player.exams.map((x) => {
+              const icon = x.passed ? <CheckCircle2 className="size-4 text-emerald-600" /> : x.pending ? <Clock className="size-4 text-amber-500" /> : x.locked ? <Lock className="size-4 text-slate-400" /> : <ClipboardList className="size-4 text-brand-600" />;
+              return (
+                <li key={x.id}>
+                  {x.locked ? <span className="flex cursor-not-allowed items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-slate-400" title="Primero termina las lecciones">{icon}<span className="truncate">{x.title}</span></span>
+                    : <Link href={`${base}/examen/${x.id}`} className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-slate-700 hover:bg-slate-100">{icon}<span className="truncate">{x.title}</span></Link>}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
     </nav>
   );
 
@@ -120,6 +137,8 @@ export function PlayerView({ player, lessonId }: { player: Player; lessonId: str
             {next ? (
               nextLocked ? <span className="btn-secondary cursor-not-allowed opacity-50" title="Completa esta lección para continuar">Siguiente <Lock className="size-4" /></span>
                 : <Link href={`${base}/leccion/${next.id}`} className={done ? "btn-primary" : "btn-secondary"}>Siguiente <ChevronRight className="size-4" /></Link>
+            ) : pendingExam ? (
+              <Link href={`${base}/examen/${pendingExam.id}`} className={done ? "btn-primary" : "btn-secondary"}><ClipboardList className="size-4" /> Ir al examen</Link>
             ) : (
               <Link href="/cursos" className={done ? "btn-primary" : "btn-secondary"}>Terminar</Link>
             )}

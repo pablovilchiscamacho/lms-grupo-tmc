@@ -2,7 +2,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 
 export type MyEnrollment = {
-  id: string; state: string; progress_status: string; result: string; progress_pct: number; due_at: string | null;
+  id: string; state: string; progress_status: string; result: string; progress_pct: number; due_at: string | null; final_score: number | null;
   requirement: string; started_at: string | null; content_completed_at: string | null; total_seconds: number; assigned_at: string;
   course: { id: string; code: string; title: string; description: string | null; estimated_minutes: number | null; status: string } | null;
 };
@@ -12,7 +12,7 @@ export async function myEnrollments() {
   const { data: me } = await supabase.auth.getClaims();
   const { data, error } = await supabase
     .from("enrollments")
-    .select("id, state, progress_status, result, progress_pct, due_at, requirement, started_at, content_completed_at, total_seconds, assigned_at, course:course_id(id, code, title, description, estimated_minutes, status)")
+    .select("id, state, progress_status, result, progress_pct, final_score, due_at, requirement, started_at, content_completed_at, total_seconds, assigned_at, course:course_id(id, code, title, description, estimated_minutes, status)")
     .eq("user_id", me?.claims?.sub ?? "")
     .eq("state", "active")
     .order("due_at", { ascending: true, nullsFirst: false });
@@ -30,8 +30,9 @@ export type PlayerLesson = {
   status: "not_started" | "viewed" | "completed"; locked: boolean; seconds: number; video_pct: number; pages: number; resume: Record<string, unknown>;
 };
 export type PlayerModule = { id: string; title: string; lessons: PlayerLesson[] };
+export type PlayerExam = { id: string; title: string; locked: boolean; passed: boolean; pending: boolean; used: number; can_retry: boolean };
 export type Player = {
-  enrollment: MyEnrollment; versionId: string; sequential: boolean; modules: PlayerModule[]; order: string[];
+  enrollment: MyEnrollment; versionId: string; sequential: boolean; modules: PlayerModule[]; order: string[]; exams: PlayerExam[];
 };
 
 const FILE_COLS = "id, original_name, extension, mime_type, page_count, media_duration_s, size_bytes";
@@ -43,20 +44,21 @@ export async function getPlayer(enrollmentId: string): Promise<Player | null> {
   const { data: me } = await supabase.auth.getClaims();
   const { data: e } = await supabase
     .from("enrollments")
-    .select("id, state, progress_status, result, progress_pct, due_at, requirement, started_at, content_completed_at, total_seconds, assigned_at, course_version_id, course:course_id(id, code, title, description, estimated_minutes, status, current_version_id)")
+    .select("id, state, progress_status, result, progress_pct, final_score, due_at, requirement, started_at, content_completed_at, total_seconds, assigned_at, course_version_id, course:course_id(id, code, title, description, estimated_minutes, status, current_version_id)")
     .eq("id", enrollmentId).eq("user_id", me?.claims?.sub ?? "").maybeSingle();
   if (!e) return null;
   const enrollment = e as unknown as MyEnrollment & { course_version_id: string | null; course: { current_version_id: string | null } };
   const versionId = enrollment.course_version_id ?? enrollment.course?.current_version_id;
   if (!versionId) return null;
 
-  const [{ data: version }, { data: mods, error }, { data: progress }] = await Promise.all([
+  const [{ data: version }, { data: mods, error }, { data: progress }, { data: exams }] = await Promise.all([
     supabase.from("course_versions").select("sequential").eq("id", versionId).single(),
     supabase.from("course_modules")
       .select(`id, title, position, is_required, lessons(id, title, position, is_required, completion_rule, min_seconds, min_video_pct,
         contents:lesson_contents(id, position, type, body_html, url, file:file_id(${FILE_COLS}), pdf:pdf_file_id(${FILE_COLS})))`)
       .eq("course_version_id", versionId).order("position"),
     supabase.from("lesson_progress").select("lesson_id, status, seconds_spent, video_max_pct, pages_viewed, resume_state").eq("enrollment_id", enrollmentId),
+    supabase.rpc("my_course_exams", { p_enrollment: enrollmentId }),
   ]);
   if (error) throw error;
   const prog = new Map((progress ?? []).map((p) => [p.lesson_id as string, p]));
@@ -81,5 +83,5 @@ export async function getPlayer(enrollmentId: string): Promise<Player | null> {
       return lesson;
     }),
   }));
-  return { enrollment, versionId, sequential, modules, order };
+  return { enrollment, versionId, sequential, modules, order, exams: ((exams ?? []) as PlayerExam[]) };
 }

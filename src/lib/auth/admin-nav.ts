@@ -17,10 +17,9 @@ const DEFS: { title?: string; items: Def[] }[] = [
   ] },
   { title: "Capacitación", items: [
     { href: "/admin/cursos", label: "Cursos", icon: "courses", perms: ["courses.read"] },
-    { href: "/admin/banco-preguntas", label: "Banco de preguntas", icon: "questions", perms: ["questions.read"], phase: 3 },
-    { href: "/admin/examenes", label: "Exámenes", icon: "exams", perms: ["exams.write"], phase: 3 },
+    { href: "/admin/banco-preguntas", label: "Banco de preguntas", icon: "questions", perms: ["questions.read"] },
     { href: "/admin/asignaciones", label: "Asignaciones", icon: "assign", perms: ["assignments.read"], phase: 4 },
-    { href: "/admin/calificaciones", label: "Calificaciones", icon: "grading", perms: ["grading.grade"], phase: 3 },
+    { href: "/admin/calificaciones", label: "Calificar", icon: "grading", perms: ["grading.grade"] },
     { href: "/admin/certificados", label: "Certificados", icon: "award", perms: ["certificates.read"], phase: 6 },
   ] },
   { title: "Control", items: [

@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { fmtRelative, greeting } from "@/lib/format";
 import { actionLabel } from "@/lib/audit-labels";
 import { Alert, Card, EmptyState, Stat } from "@/components/ui";
+import { pendingReviews } from "@/features/grading/queries";
 
 type AuditRow = { id: number; occurred_at: string; actor_name: string | null; action: string; new_data: Record<string, unknown> | null };
 
@@ -32,6 +33,7 @@ export default async function AdminHome({ searchParams }: PageProps<"/admin">) {
       ])
     : [0, 0, 0, 0, 0];
 
+  const toGrade = can(ctx, "grading.grade") ? (await pendingReviews().catch(() => [])).length : 0;
   const activity = can(ctx, "audit.read")
     ? ((await supabase.rpc("search_audit", { p_limit: 8 })).data as AuditRow[] | null) ?? []
     : [];
@@ -56,13 +58,16 @@ export default async function AdminHome({ searchParams }: PageProps<"/admin">) {
       <div className="grid gap-6 lg:grid-cols-2">
         <Card title="Requiere atención">
           <ul className="divide-y divide-slate-100">
+            {toGrade > 0 && (
+              <AttentionItem href="/admin/calificaciones" tone="amber" text={`${toGrade} respuesta${toGrade === 1 ? "" : "s"} de examen por calificar`} />
+            )}
             {canUsers && noDept > 0 && (
               <AttentionItem href="/admin/usuarios?sin=departamento" tone="amber" text={`${noDept} usuario${noDept === 1 ? "" : "s"} activo${noDept === 1 ? "" : "s"} sin departamento`} />
             )}
             {canUsers && noManager > 0 && (
               <AttentionItem href="/admin/usuarios?sin=jefe" tone="amber" text={`${noManager} usuario${noManager === 1 ? "" : "s"} activo${noManager === 1 ? "" : "s"} sin jefe directo`} />
             )}
-            {(!canUsers || (noDept === 0 && noManager === 0)) && (
+            {toGrade === 0 && (!canUsers || (noDept === 0 && noManager === 0)) && (
               <li className="py-2 text-sm text-slate-500">Sin pendientes. Los cursos vencidos, exámenes por calificar y vencimientos próximos aparecerán aquí a partir de las fases 3 y 4.</li>
             )}
           </ul>

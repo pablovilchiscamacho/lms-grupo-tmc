@@ -15,7 +15,10 @@ export function CourseCard({ e, tz }: { e: MyEnrollment; tz?: string }) {
     <article className={clsx("card flex flex-col p-4", overdue && "border-red-200", soon && "border-amber-200")}>
       <div className="mb-2 flex flex-wrap items-center gap-1.5">
         {e.requirement === "mandatory" ? <Badge tone="blue">Obligatorio</Badge> : <Badge>{REQUIREMENT_LABEL[e.requirement]}</Badge>}
-        {done ? <Badge tone="green">Completado</Badge> : overdue ? <Badge tone="red">Vencido</Badge> : e.progress_status === "in_progress" ? <Badge tone="blue">En progreso</Badge> : <Badge>Pendiente</Badge>}
+        {e.result === "passed" ? <Badge tone="green">Aprobado{e.final_score != null ? ` · ${Number(e.final_score)}%` : ""}</Badge>
+          : e.result === "failed" ? <Badge tone="red">Reprobado</Badge>
+          : e.result === "pending_review" ? <Badge tone="amber">En revisión</Badge>
+          : done ? <Badge tone="green">Completado</Badge> : overdue ? <Badge tone="red">Vencido</Badge> : e.progress_status === "in_progress" ? <Badge tone="blue">En progreso</Badge> : <Badge>Pendiente</Badge>}
       </div>
       <h3 className="font-semibold text-slate-900">{e.course?.title}</h3>
       {e.course?.description && <p className="mt-1 line-clamp-2 text-sm text-slate-500">{e.course.description}</p>}

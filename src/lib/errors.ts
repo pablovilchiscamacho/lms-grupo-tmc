@@ -31,6 +31,16 @@ const BUSINESS: Record<string, string> = {
   LESSON_RULE_NOT_MET: "Aún no cumples lo necesario para completar esta lección.",
   FILE_TYPE_NOT_ALLOWED: "Ese tipo de archivo no está permitido. Usa PDF, PowerPoint, Word, Excel, MP4, JPG o PNG.",
   ACADEMIC_RECORD_PROTECTED: "El historial de capacitación no se puede borrar.",
+  QUESTION_IN_USE: "La pregunta está en un examen en edición. Quítala del examen antes de borrarla.",
+  EXAM_NOT_AVAILABLE: "Este examen no está disponible en este momento.",
+  EXAM_EMPTY: "El examen todavía no tiene preguntas.",
+  CONTENT_NOT_COMPLETE: "Primero termina las lecciones del curso.",
+  ALREADY_PASSED: "Ya aprobaste este examen.",
+  ATTEMPT_PENDING_REVIEW: "Tu intento anterior está en revisión. Podrás volver a presentar cuando lo califiquen.",
+  NO_ATTEMPTS_LEFT: "Ya usaste todos tus intentos. Habla con tu administrador si necesitas otro.",
+  SESSION_CONFLICT: "Este examen se abrió en otro dispositivo o pestaña. Continúa desde ahí o vuelve a entrar aquí para tomar el control.",
+  RESPONSE_INVALID: "No se pudo guardar esa respuesta. Recarga la página.",
+  ATTEMPT_NOT_GRADABLE: "Ese intento todavía no se puede calificar.",
 };
 
 /** Mensajes que incluyen el detalle que manda la base. */
@@ -38,6 +48,8 @@ const WITH_DETAIL: Record<string, (d: string) => string> = {
   PUBLISH_BLOCKED: (d) => `Antes de publicar falta: ${d.split(" | ").join(" ")}`,
   PREREQUISITE_MISSING: (d) => `Antes debes completar el curso «${d}».`,
   FILE_TOO_LARGE: (d) => `El archivo es demasiado grande (máximo ${d} MB).`,
+  QUESTION_INVALID: (d) => d,
+  COOLDOWN: (d) => `Podrás volver a presentar en ${d} minuto${d === "1" ? "" : "s"}.`,
 };
 
 /** Restricciones únicas → mensaje (código Postgres 23505). */

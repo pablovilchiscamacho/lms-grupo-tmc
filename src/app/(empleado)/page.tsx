@@ -16,6 +16,8 @@ export default async function EmployeeHome({ searchParams }: PageProps<"/">) {
   const dueSoon = pending.filter((e) => { const d = daysLeft(e.due_at); return d !== null && d <= 7; });
   const overdue = pending.filter((e) => (daysLeft(e.due_at) ?? 1) < 0).length;
   const compliance = list.length ? Math.round((completed.length / list.length) * 100) : null;
+  const scored = list.filter((e) => e.final_score != null && (e.result === "passed" || e.result === "failed"));
+  const average = scored.length ? Math.round(scored.reduce((t, e) => t + Number(e.final_score), 0) / scored.length) : null;
 
   return (
     <div className="space-y-6">
@@ -31,7 +33,7 @@ export default async function EmployeeHome({ searchParams }: PageProps<"/">) {
         <Stat label="Mi progreso" value={compliance === null ? "—" : `${compliance}%`} hint="Cursos terminados de los asignados" tone={compliance !== null && compliance >= 90 ? "green" : undefined} />
         <Stat label="Pendientes" value={pending.length} hint={overdue ? `${overdue} vencido${overdue === 1 ? "" : "s"}` : undefined} tone={overdue ? "amber" : undefined} />
         <Stat label="Completados" value={completed.length} tone="green" />
-        <Stat label="Promedio" value="—" hint="Con los exámenes (Fase 3)" />
+        <Stat label="Promedio" value={average === null ? "—" : `${average}%`} hint="De tus exámenes calificados" />
       </section>
 
       {dueSoon.length > 0 && (
