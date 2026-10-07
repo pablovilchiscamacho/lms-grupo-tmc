@@ -46,3 +46,6 @@ next-env.d.ts
 # supabase cli
 supabase/.temp/
 supabase/.branches/
+
+# generado por scripts/copy-pdf-worker.mjs
+public/pdf.worker.min.mjs

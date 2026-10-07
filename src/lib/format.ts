@@ -39,3 +39,32 @@ export const SCOPE_LABEL: Record<string, string> = {
   department: "Departamento",
   team: "Su línea de reporte",
 };
+
+export function fmtBytes(n: number | null | undefined) {
+  if (!n) return "0 MB";
+  if (n < 1024 * 1024) return `${Math.max(1, Math.round(n / 1024))} KB`;
+  if (n < 1024 ** 3) return `${(n / 1024 / 1024).toFixed(n < 10 * 1024 * 1024 ? 1 : 0)} MB`;
+  return `${(n / 1024 ** 3).toFixed(2)} GB`;
+}
+
+export function fmtDuration(seconds: number | null | undefined) {
+  const s = Math.max(0, Math.round(seconds ?? 0));
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
+  return h ? `${h} h ${m} min` : m ? `${m} min` : `${s} s`;
+}
+
+/** Días que faltan para una fecha (negativo = vencido). */
+export function daysLeft(due: string | null | undefined) {
+  if (!due) return null;
+  return Math.ceil((new Date(due).getTime() - Date.now()) / 86_400_000);
+}
+
+export const COURSE_STATUS: Record<string, [string, "slate" | "green" | "amber" | "red" | "blue"]> = {
+  draft: ["Borrador", "slate"], review: ["En revisión", "blue"], published: ["Publicado", "green"],
+  suspended: ["Suspendido", "amber"], archived: ["Archivado", "red"],
+};
+export const REQUIREMENT_LABEL: Record<string, string> = { mandatory: "Obligatorio", recommended: "Recomendado", optional: "Opcional" };
+export const RULE_LABEL: Record<string, string> = {
+  manual: "Botón «Marcar como completado»", on_view: "Al abrirla", min_time: "Tiempo mínimo",
+  video_percent: "Ver el video", all_pages: "Ver todas las páginas",
+};

@@ -61,3 +61,14 @@ body {
 @utility td {
   @apply px-3 py-2.5 text-sm text-slate-700;
 }
+
+/* Texto de lecciones (HTML ya sanitizado en el servidor) */
+.lesson-html { line-height: 1.65; color: #1e293b; }
+.lesson-html > * + * { margin-top: 0.75em; }
+.lesson-html h2 { font-size: 1.15rem; font-weight: 600; color: #0f172a; }
+.lesson-html h3 { font-size: 1.05rem; font-weight: 600; }
+.lesson-html ul { list-style: disc; padding-left: 1.4em; }
+.lesson-html ol { list-style: decimal; padding-left: 1.4em; }
+.lesson-html blockquote { border-left: 3px solid var(--color-brand-200); padding-left: 0.9em; color: #475569; }
+.lesson-html a { color: var(--color-brand-700); text-decoration: underline; }
+.lesson-html code { background: #f1f5f9; padding: 0.1em 0.3em; border-radius: 4px; font-size: 0.9em; }

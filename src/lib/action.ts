@@ -40,3 +40,10 @@ export function must<T>(res: { data: T; error: unknown }): T {
   if (res.error) throw res.error;
   return res.data;
 }
+
+/** Como must, pero además exige datos (consultas con .select()/.single()). */
+export function mustData<T>(res: { data: T; error: unknown }): NonNullable<T> {
+  if (res.error) throw res.error;
+  if (res.data == null) throw new Error("Respuesta sin datos");
+  return res.data as NonNullable<T>;
+}

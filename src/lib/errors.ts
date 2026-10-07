@@ -16,6 +16,28 @@ const BUSINESS: Record<string, string> = {
   IMPORT_TOO_LARGE: "El archivo tiene demasiadas filas (máximo 2,000 por importación).",
   AUDIT_IMMUTABLE: "La bitácora no se puede modificar.",
   RATE_LIMITED: "Demasiados intentos. Espera un minuto e inténtalo de nuevo.",
+  VERSION_LOCKED: "Esta versión ya está publicada y no se puede modificar. Usa «Editar contenido» para crear una versión nueva.",
+  REVIEW_REQUIRED: "Este curso debe pasar por revisión antes de publicarse.",
+  INVALID_TRANSITION: "Ese cambio de estado no está permitido para el curso.",
+  COURSE_ARCHIVED: "El curso está archivado.",
+  COURSE_HAS_HISTORY: "El curso ya tiene personas asignadas, así que no se puede borrar. Puedes archivarlo.",
+  NOT_ENROLLED: "No tienes asignado este curso.",
+  COURSE_SUSPENDED: "Este curso está suspendido temporalmente.",
+  COURSE_NOT_AVAILABLE: "Este curso todavía no está disponible.",
+  NOT_YET_AVAILABLE: "Este curso todavía no está disponible.",
+  ACCESS_EXPIRED: "El plazo para tomar este curso ya terminó. Habla con tu administrador.",
+  LESSON_LOCKED: "Primero completa las lecciones anteriores.",
+  LESSON_NOT_VIEWED: "Primero abre la lección.",
+  LESSON_RULE_NOT_MET: "Aún no cumples lo necesario para completar esta lección.",
+  FILE_TYPE_NOT_ALLOWED: "Ese tipo de archivo no está permitido. Usa PDF, PowerPoint, Word, Excel, MP4, JPG o PNG.",
+  ACADEMIC_RECORD_PROTECTED: "El historial de capacitación no se puede borrar.",
+};
+
+/** Mensajes que incluyen el detalle que manda la base. */
+const WITH_DETAIL: Record<string, (d: string) => string> = {
+  PUBLISH_BLOCKED: (d) => `Antes de publicar falta: ${d.split(" | ").join(" ")}`,
+  PREREQUISITE_MISSING: (d) => `Antes debes completar el curso «${d}».`,
+  FILE_TOO_LARGE: (d) => `El archivo es demasiado grande (máximo ${d} MB).`,
 };
 
 /** Restricciones únicas → mensaje (código Postgres 23505). */
@@ -29,6 +51,7 @@ const UNIQUE: Record<string, string> = {
   branches_company_code_key: "Ya existe una sucursal con esa clave en la empresa.",
   departments_company_code_key: "Ya existe un departamento con esa clave en la empresa.",
   positions_company_code_key: "Ya existe un puesto con esa clave en la empresa.",
+  courses_code_key: "Ya existe un curso con esa clave.",
 };
 
 /** Mensajes por campo para errores de validación ({"email":"taken"}). */
@@ -53,7 +76,7 @@ export function toFriendlyError(e: unknown): FriendlyError {
   const message = err.message ?? "";
   const detail = err.details ?? err.detail ?? "";
 
-  if (code === "P0001" || BUSINESS[message]) {
+  if (code === "P0001" || BUSINESS[message] || WITH_DETAIL[message]) {
     if (message === "VALIDATION" && detail.startsWith("{")) {
       try {
         const raw = JSON.parse(detail) as Record<string, string>;
@@ -63,6 +86,7 @@ export function toFriendlyError(e: unknown): FriendlyError {
         /* sigue abajo */
       }
     }
+    if (WITH_DETAIL[message] && detail) return { code: message, message: WITH_DETAIL[message](detail) };
     if (BUSINESS[message]) return { code: message, message: BUSINESS[message] };
   }
   if (code === "23505") {

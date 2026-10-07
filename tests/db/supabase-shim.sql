@@ -32,3 +32,10 @@ grant execute on all functions in schema auth to anon, authenticated, service_ro
 -- Supabase otorga por defecto todo sobre las tablas nuevas de public; las migraciones lo restringen.
 alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
 alter default privileges in schema public grant all on sequences to anon, authenticated, service_role;
+
+-- Storage (solo la tabla de buckets que usan las migraciones)
+create schema storage;
+create table storage.buckets (
+  id text primary key, name text not null, public boolean default false,
+  file_size_limit bigint, allowed_mime_types text[], created_at timestamptz default now()
+);
