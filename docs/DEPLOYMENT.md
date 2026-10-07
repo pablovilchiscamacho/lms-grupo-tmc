@@ -66,7 +66,9 @@ Esta guía tiene dos partes: **desarrollo** (un proyecto de Supabase para probar
    ```
    Si el correo aún no está configurado, agrega `--temporal`.
 8. Entra a la app, configura tu verificación en dos pasos y da de alta las empresas, sucursales y departamentos (**Organización**). Después, importa a los usuarios (**Usuarios → Importar**).
-9. Verifica `https://<dominio>/api/health`: debe responder `{"ok":true,"version":"<commit>"}`.
+9. 👤 **Storage → Settings**: sube el *Upload file size limit* a **1 GB**, para que quepan los videos.
+10. 👤 (Opcional) **Conversión de PowerPoint a PDF**: crea una cuenta en <https://cloudconvert.com>, genera una API key (permisos `task.read` y `task.write`) y ponla en Vercel como `CLOUDCONVERT_API_KEY`. Sin ella, el administrador adjunta el PDF a mano.
+11. Verifica `https://<dominio>/api/health`: debe responder `{"ok":true,"version":"<commit>"}`.
 
 **Nunca** corras `npm run seed:demo` contra producción. El script se niega a correr con `APP_ENV=production`.
 

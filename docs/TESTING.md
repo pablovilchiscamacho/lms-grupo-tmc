@@ -19,7 +19,7 @@ Las pruebas de base de datos no necesitan Docker ni internet: cada archivo crea 
 - `pg_cron` no existe en PGlite: la migración de jobs se salta y las funciones (`audit.seal()`) se prueban llamándolas directamente.
 - PGlite es Postgres 18 y Supabase usa 15 o 17, así que las migraciones evitan la sintaxis exclusiva de versiones nuevas.
 
-## Cobertura actual (Fase 1): 39 pruebas
+## Cobertura actual: 62 pruebas (Fase 1: 39 · Fase 2: 23)
 
 | Área (§65) | Pruebas |
 |---|---|
@@ -35,6 +35,22 @@ Las pruebas de base de datos no necesitan Docker ni internet: cada archivo crea 
 | **Login** | Resolución por correo, usuario o número de empleado; número ambiguo entre empresas; `resolve_login` solo para el servidor; *rate limit* |
 | **Importación** | Válidos, errores, duplicados (en el archivo y en la base) y permisos por empresa |
 | **Bitácora** | Autoría correcta, cadena de hash verificable, inmutable (UPDATE/DELETE rechazados), sin acceso por API y consulta filtrada por alcance |
+
+### Fase 2 (`tests/db/phase2.test.ts`)
+
+| Área | Pruebas |
+|---|---|
+| **Cursos** | Crear con versión 1 en borrador; RH sin permiso no crea ni ve cursos; el reporte de publicación detecta módulos y lecciones vacíos |
+| **Inmutabilidad** | Tras publicar no se pueden editar lecciones, contenidos ni reglas de esa versión (`VERSION_LOCKED`); la máquina de estados rechaza transiciones inválidas |
+| **Versionado (§31)** | La versión 2 es una copia que reutiliza los mismos archivos; quien ya empezó sigue en la versión 1 y quien no, toma la 2 |
+| **Asignación** | Asignación directa, sin duplicados; RH sin permiso de asignar no puede |
+| **Visibilidad** | Solo el inscrito ve el curso y sus lecciones; el jefe ve el avance de su equipo y no el de otra empresa |
+| **Avance** | Orden obligatorio; el botón valida la regla en el servidor; el tiempo lo cuenta el servidor (máx. 60 s por latido); el % de video se acota al tiempo real; las páginas del PDF no se pueden marcar todas de golpe |
+| **Integridad** | El empleado no puede escribir su avance; nadie puede borrar inscripciones |
+| **Archivos** | Tipos y tamaños permitidos; deduplicación por huella; solo quien gestiona el curso o está inscrito abre un archivo; los pasos de servidor no se pueden llamar desde la app |
+| **Estados** | Un curso suspendido no se puede tomar; no se borra un curso con historial; duplicar copia todo el contenido |
+
+Además se probó contra el proyecto real de Supabase la subida directa a Storage, la verificación del tipo real, el conteo de páginas y que el bucket no se pueda leer sin URL firmada.
 
 ## Regla para las fases siguientes
 Cada tabla nueva llega con sus pruebas de RLS: qué **puede** y qué **no puede** hacer cada rol, siempre con usuarios de dos empresas distintas. Cada RPC llega con su prueba de permiso negado.

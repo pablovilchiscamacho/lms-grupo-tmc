@@ -69,3 +69,43 @@ Convenciones:
 | `GET /api/health` | `{ ok, version, entorno }` para monitoreo |
 | `GET /auth/confirm` | Enlaces de correo de Supabase Auth |
 | `GET /salir` | Cerrar sesión |
+
+## Fase 2: cursos
+
+### Cursos (`src/features/courses/actions.ts`)
+
+| Server Action | RPC / tabla | Permiso | Errores |
+|---|---|---|---|
+| `createCourse(form)` | `create_course` (crea la versión 1 en borrador y un módulo) | `courses.create` en la empresa dueña (grupo si es de todo el grupo) | `courses_code_key` |
+| `updateCourse(id, form)` | `courses` (RLS, columnas permitidas) | `courses.update` | — |
+| `updateVersionSettings(...)` | `course_versions` (solo en borrador; trigger) | `courses.update` | `VERSION_LOCKED` |
+| `getPublishIssues(versionId)` | `version_publish_issues` | `courses.read` | — |
+| `publishCourse(id, resumen, recapacitación)` | `publish_course_version` (retira la versión anterior en la misma transacción) | `courses.publish` | `PUBLISH_BLOCKED`, `REVIEW_REQUIRED` |
+| `startNewVersion(id)` | `create_draft_version` (copia profunda; los archivos se reutilizan) | `courses.update` | `COURSE_ARCHIVED` |
+| `setCourseStatus(id, estado)` | `set_course_status` (máquina de estados) | según la transición | `INVALID_TRANSITION` |
+| `duplicateCourse(id, clave, nombre)` | `duplicate_course` | `courses.read` + `courses.create` | — |
+| `deleteCourse(id)` | `delete_course` (solo sin inscripciones) | `courses.delete` | `COURSE_HAS_HISTORY` |
+| `previewAudience` / `enrollAudience(id, filtro, fecha)` | `profiles` (RLS) → `admin_enroll` | `assignments.write` por persona | — |
+| `cancelEnrollment(...)` | `cancel_enrollment` | `enrollments.adjust` | — |
+
+### Contenido y archivos (`src/features/content/actions.ts`)
+
+| Server Action | Qué hace |
+|---|---|
+| `prepareUpload({courseId, name, size, sha256, durationS})` | `file_prepare_upload`: valida tipo y tamaño (configurable en `uploads.limits`) y deduplica por huella. Devuelve una URL firmada para subir **directo a Storage**. |
+| `finalizeUpload(fileId)` | Lee los primeros bytes y verifica el tipo real (*magic bytes*); si no coincide, borra el objeto. Cuenta las páginas del PDF y arranca la conversión a PDF (CloudConvert) si aplica. Llama a `file_finalize` (solo service role). |
+| `pollConversion(fileId)` | Consulta CloudConvert; al terminar guarda el PDF, lo registra con `file_conversion_update` y lo liga a las lecciones en borrador. |
+| `addModule` · `updateModule` · `deleteModule` | `course_modules` (RLS + trigger de inmutabilidad) |
+| `addTextLesson` · `addLinkLesson` · `addLessonFromFile` · `updateLesson` · `deleteLesson` | `lessons` + `lesson_contents`. Al crear desde un archivo, la regla de completado depende del tipo: PDF/presentación → todas las páginas, video → % visto, imagen → al abrir, Excel → botón. |
+| `saveTextContent(id, html)` | Sanitiza el HTML (lista blanca) antes de guardar |
+| `attachPdf(contentId, pdfFileId)` | Liga a mano el PDF de una presentación o documento |
+| `reorder(kind, ids)` | `reorder_items` (arrastrar y soltar) |
+
+`GET /api/files/[id]` (`?dl=1` para descargar): `file_access` autoriza (gestión del curso o inscripción) y redirige a una URL firmada de 10 min (4 h para video).
+
+### Alumno (`src/features/learning/actions.ts`)
+
+| Server Action | RPC | Reglas en el servidor |
+|---|---|---|
+| `trackLesson(lessonId, "open" \| "heartbeat", {pages, video_pct, resume})` | `track_lesson` | Inicia el curso y fija la versión; valida inscripción, estado, fechas, prerrequisitos y orden. Suma como máximo 60 s por latido; acota el % de video al tiempo real; acepta pocas páginas nuevas por latido (~2 s por página). Completa sola la lección si se cumple su regla. |
+| `completeLesson(lessonId)` | `complete_lesson` | `LESSON_RULE_NOT_MET` si no se cumple la regla |

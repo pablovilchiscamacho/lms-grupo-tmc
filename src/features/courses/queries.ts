@@ -11,7 +11,7 @@ export async function listCourses(f: { q?: string; status?: string }) {
   const supabase = await createClient();
   let query = supabase
     .from("courses")
-    .select("id, code, title, status, updated_at, owner_company:owner_company_id(short_name), versions:course_versions(version_number, status), enrollments(count)")
+    .select("id, code, title, status, updated_at, owner_company:owner_company_id(short_name), versions:course_versions!course_versions_course_id_fkey(version_number, status), enrollments(count)")
     .is("deleted_at", null)
     .order("updated_at", { ascending: false })
     .limit(200);
@@ -56,7 +56,7 @@ export async function getCourse(id: string) {
     .from("courses")
     .select(`id, code, title, description, status, owner_company_id, owner_department_id, default_requirement, estimated_minutes,
       issues_certificate, validity_months, current_version_id, created_at, published_at,
-      versions:course_versions(id, version_number, status, passing_score, min_completion_pct, sequential, change_summary, published_at, review_notes)`)
+      versions:course_versions!course_versions_course_id_fkey(id, version_number, status, passing_score, min_completion_pct, sequential, change_summary, published_at, review_notes)`)
     .eq("id", id)
     .maybeSingle();
   if (error) throw error;

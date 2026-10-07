@@ -26,20 +26,20 @@ export function EmployeeNav({ items }: { items: NavItem[] }) {
   const mobile = items.filter((i) => ["/", "/cursos", "/certificados", "/notificaciones", "/perfil"].includes(i.href));
   return (
     <>
-      <nav aria-label="Principal" className="hidden gap-1 md:flex">
+      <nav aria-label="Principal" className="hidden gap-0.5 xl:flex">
         {items.map((item) => {
           const Icon = ICONS[item.icon];
           const active = isActive(pathname, item);
           return (
             <Link key={item.href} href={item.href} aria-current={active ? "page" : undefined}
-              className={clsx("flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition",
+              className={clsx("flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm font-medium whitespace-nowrap transition",
                 active ? "bg-brand-50 text-brand-800" : "text-slate-600 hover:bg-slate-100 hover:text-slate-900")}>
               <Icon className="size-4" aria-hidden /> {item.label}
             </Link>
           );
         })}
       </nav>
-      <nav aria-label="Principal" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] md:hidden">
+      <nav aria-label="Principal" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] xl:hidden">
         {mobile.map((item) => {
           const Icon = ICONS[item.icon];
           const active = isActive(pathname, item);
