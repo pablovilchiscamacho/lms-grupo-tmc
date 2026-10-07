@@ -19,7 +19,7 @@ Las pruebas de base de datos no necesitan Docker ni internet: cada archivo crea 
 - `pg_cron` no existe en PGlite: la migración de jobs se salta y las funciones (`audit.seal()`) se prueban llamándolas directamente.
 - PGlite es Postgres 18 y Supabase usa 15 o 17, así que las migraciones evitan la sintaxis exclusiva de versiones nuevas.
 
-## Cobertura actual: 62 pruebas (Fase 1: 39 · Fase 2: 23)
+## Cobertura actual: 83 pruebas (Fase 1: 39 · Fase 2: 23 · Fase 3: 19 + 2 del importador)
 
 | Área (§65) | Pruebas |
 |---|---|
@@ -51,6 +51,24 @@ Las pruebas de base de datos no necesitan Docker ni internet: cada archivo crea 
 | **Estados** | Un curso suspendido no se puede tomar; no se borra un curso con historial; duplicar copia todo el contenido |
 
 Además se probó contra el proyecto real de Supabase la subida directa a Storage, la verificación del tipo real, el conteo de páginas y que el bucket no se pueda leer sin URL firmada.
+
+### Fase 3 (`tests/db/phase3.test.ts` y `src/features/exams/import-parse.test.ts`)
+
+| Área | Pruebas |
+|---|---|
+| **Banco** | Validación por tipo; el empleado no puede leer preguntas ni opciones; editar una pregunta ya publicada crea una revisión y el examen publicado conserva la original |
+| **Presentar** | No se presenta sin terminar el contenido; las preguntas llegan sin respuestas correctas; las claves y los intentos no se pueden leer por la API |
+| **Sesión** | Volver a entrar reanuda el mismo intento; otro dispositivo toma el control y el anterior ya no puede guardar (`SESSION_CONFLICT`) |
+| **Respuestas** | Se rechazan ids que no son de la pregunta |
+| **Calificación** | Los 8 tipos: parcial en selección múltiple (resta errores), respuesta corta sin acentos ni mayúsculas, ordenar, relacionar, escala sin puntos; la abierta queda en revisión y bloquea un nuevo intento |
+| **Revisión manual** | Bandeja; el empleado no se califica a sí mismo; RH sin permiso no califica; recalificar una automática exige motivo y queda marcada |
+| **Política** | Con la mejor calificación, el segundo intento aprueba el curso |
+| **Tiempo** | Con el tiempo vencido no se guarda y el intento se cierra solo; el job cierra los intentos abandonados |
+| **Intentos** | Al agotarlos sin aprobar, el curso queda reprobado; un intento anulado no cuenta |
+| **Versiones** | La versión nueva copia el examen; el publicado no se edita (solo activar o pausar) |
+| **Importador** | La plantilla oficial produce los 8 tipos sin errores; las filas con error se reportan |
+
+Se probó en vivo contra Supabase: examen con los 8 tipos, entrega, calificación automática (77.78 % preliminar), revisión en la bandeja y aprobación final (100 %).
 
 ## Regla para las fases siguientes
 Cada tabla nueva llega con sus pruebas de RLS: qué **puede** y qué **no puede** hacer cada rol, siempre con usuarios de dos empresas distintas. Cada RPC llega con su prueba de permiso negado.

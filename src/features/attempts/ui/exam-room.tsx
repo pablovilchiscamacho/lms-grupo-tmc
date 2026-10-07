@@ -206,7 +206,7 @@ function ExamRunner({ exam, enrollmentId }: { exam: MyExam; enrollmentId: string
           {mm && <span className={clsx("flex items-center gap-1 rounded-md px-2 py-1 font-semibold tabular-nums", left! <= 60 ? "bg-red-100 text-red-700" : left! <= 300 ? "bg-amber-100 text-amber-800" : "bg-slate-100 text-slate-800")} role="timer" aria-label={`Tiempo restante ${mm}`}><Clock className="size-4" /> {mm}</span>}
         </div>
       </div>
-      {attempt.resumed && <Alert kind="info">Retomaste tu examen donde lo dejaste.</Alert>}
+      {attempt.resumed && attempt.questions.some((x) => x.response != null) && <Alert kind="info">Retomaste tu examen donde lo dejaste.</Alert>}
 
       <nav aria-label="Preguntas" className="flex flex-wrap gap-1.5">
         {qs.map((x, i) => (

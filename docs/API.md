@@ -109,3 +109,23 @@ Convenciones:
 |---|---|---|
 | `trackLesson(lessonId, "open" \| "heartbeat", {pages, video_pct, resume})` | `track_lesson` | Inicia el curso y fija la versión; valida inscripción, estado, fechas, prerrequisitos y orden. Suma como máximo 60 s por latido; acota el % de video al tiempo real; acepta pocas páginas nuevas por latido (~2 s por página). Completa sola la lección si se cumple su regla. |
 | `completeLesson(lessonId)` | `complete_lesson` | `LESSON_RULE_NOT_MET` si no se cumple la regla |
+
+## Fase 3: exámenes
+
+| Server Action | RPC | Reglas en el servidor |
+|---|---|---|
+| `saveQuestion(q, examId?)` | `save_question` | Valida por tipo; si la pregunta ya se usó crea una **revisión** y actualiza solo los exámenes en borrador |
+| `deleteQuestion(id)` | `delete_question` | Borrado lógico; no si está en un examen en edición |
+| `createExam` · `updateExam` · `deleteExam` | `exams` (RLS + trigger) | Solo en borrador; activo y disponibilidad se pueden cambiar siempre |
+| `addItems` · `updateItem` · `removeItem` · `addPool` · `removePool` | `exam_items`, `exam_pools` | Preguntas fijas y "N al azar" del banco |
+| `previewQuestionImport(file)` · `commitQuestionImport(...)` | `save_question` por fila | Plantilla `public/plantillas/preguntas.xlsx` (8 tipos) |
+| `startAttempt(examId, token)` | `start_attempt` | Inscripción, versión, contenido terminado, intentos, enfriamiento, aprobado previo y revisión pendiente. Selecciona y mezcla preguntas, guarda la copia congelada y la clave privada. Si ya hay uno abierto lo **reanuda** (otro token = toma de control). |
+| `saveAnswer(attemptId, qId, respuesta, token)` | `save_answer` | Token de la sesión, hora del servidor (+30 s de gracia), ids de la copia congelada. Si el tiempo venció, cierra y responde `{closed, expired}`. |
+| `submitAttempt(attemptId, token)` | `submit_attempt` → `app.finalize_attempt` | Califica lo automático, manda a revisión lo abierto y recalcula la inscripción |
+| `reportFocusLost(attemptId)` | `log_attempt_event` | Señal informativa, máximo una por minuto |
+| — | `my_course_exams(enrollment)` · `my_attempt_result(attempt)` | Lo que el empleado puede ver, según la visibilidad configurada |
+| `gradeAnswer(answerId, pct, comentario)` | `grade_answer` | Evaluador con alcance o instructor del curso; nunca uno mismo; recalificar una automática exige `grading.override` y motivo |
+| `voidAttempt(attemptId, motivo)` | `void_attempt` | `grading.override`; el intento anulado no cuenta |
+| — | `pending_reviews()` | Bandeja de calificación filtrada por alcance |
+
+`pg_cron` ejecuta `app.close_expired_attempts()` cada minuto.

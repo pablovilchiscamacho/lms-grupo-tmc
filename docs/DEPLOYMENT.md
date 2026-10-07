@@ -76,6 +76,15 @@ Esta guía tiene dos partes: **desarrollo** (un proyecto de Supabase para probar
 
 ## 3. Actualizaciones
 
+**Cambios de base de datos (sin pegar SQL):** con `SUPABASE_DB_PASSWORD` y `SUPABASE_DB_HOST` en `.env.local`, se aplica lo pendiente con:
+
+```bash
+npm run db:migrate
+```
+
+Con `npm run db:migrate -- --status` se ve qué falta, sin aplicar nada. El proyecto de producción está en la región **ca-central-1** (`aws-1-ca-central-1.pooler.supabase.com`). Las migraciones se registran en `supabase_migrations.schema_migrations`, la misma tabla que usa la CLI de Supabase.
+
+
 1. Las migraciones nuevas se agregan en `supabase/migrations/` y se aplican primero en desarrollo y luego en producción con `npm run db:push`.
 2. Vercel publica solo al hacer *push* a `main`.
 3. Después de cada publicación, revisa que `/api/health` reporte la versión nueva.
