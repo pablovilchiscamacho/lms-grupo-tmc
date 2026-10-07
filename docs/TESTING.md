@@ -19,7 +19,7 @@ Las pruebas de base de datos no necesitan Docker ni internet: cada archivo crea 
 - `pg_cron` no existe en PGlite: la migración de jobs se salta y las funciones (`audit.seal()`) se prueban llamándolas directamente.
 - PGlite es Postgres 18 y Supabase usa 15 o 17, así que las migraciones evitan la sintaxis exclusiva de versiones nuevas.
 
-## Cobertura actual: 83 pruebas (Fase 1: 39 · Fase 2: 23 · Fase 3: 19 + 2 del importador)
+## Cobertura actual: 96 pruebas (Fase 1: 39 · Fase 2: 23 · Fase 3: 19 + 2 del importador · Fase 4: 13)
 
 | Área (§65) | Pruebas |
 |---|---|
@@ -69,6 +69,19 @@ Además se probó contra el proyecto real de Supabase la subida directa a Storag
 | **Importador** | La plantilla oficial produce los 8 tipos sin errores; las filas con error se reportan |
 
 Se probó en vivo contra Supabase: examen con los 8 tipos, entrega, calificación automática (77.78 % preliminar), revisión en la bandeja y aprobación final (100 %).
+
+### Fase 4 (`tests/db/phase4.test.ts`)
+
+| Área | Pruebas |
+|---|---|
+| **Crear** | La vista previa cuenta solo a personas activas que cumplen el filtro; asignar por área con fecha relativa y para usuarios futuros; RH sin `assignments.create` no puede asignar |
+| **Reglas vivas** | Quien entra después al área recibe el curso solo; una asignación desactivada deja de inscribir |
+| **Cambios de persona** | Al cambiar de área o darse de baja se cancela lo no iniciado; lo iniciado se conserva |
+| **Excepciones** | Prórroga (cambia la fecha y avisa); intento extra tras reprobar; reasignar abre un ciclo nuevo y conserva el anterior |
+| **Recapacitación y vigencia** | Publicar con «requiere recapacitación» abre un ciclo para quien ya aprobó; el job diario renueva lo que está por vencer y manda recordatorios |
+| **Avisos** | Cada quien ve solo los suyos y solo puede marcarlos como leídos |
+
+Se probó en vivo contra Supabase: asignación por regla a EA · Ventas (2 personas), alta de una persona nueva en Ventas que recibió el curso automáticamente, prórroga desde su ficha y el aviso con contador en el menú del empleado.
 
 ## Regla para las fases siguientes
 Cada tabla nueva llega con sus pruebas de RLS: qué **puede** y qué **no puede** hacer cada rol, siempre con usuarios de dos empresas distintas. Cada RPC llega con su prueba de permiso negado.

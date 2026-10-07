@@ -129,3 +129,20 @@ Convenciones:
 | — | `pending_reviews()` | Bandeja de calificación filtrada por alcance |
 
 `pg_cron` ejecuta `app.close_expired_attempts()` cada minuto.
+
+## Fase 4: asignaciones
+
+| Server Action | RPC | Reglas en el servidor |
+|---|---|---|
+| `previewAssignment(input)` | `preview_assignment` | Cuenta personas activas que cumplen el filtro, cuántas ya lo tienen y cuántas son nuevas |
+| `createAssignment(input)` | `create_assignment` | `assignments.create` con alcance sobre cada criterio y persona; curso publicado; fecha fija o relativa (fin del día en la zona horaria de la persona); `include_future_users` deja la regla viva |
+| `setAssignmentActive(id, activo)` | `set_assignment_active` | Al desactivar deja de inscribir a quienes lleguen; lo ya asignado no cambia |
+| `adjustEnrollment(id, ajuste, ruta)` | `grant_exception` · `cancel_enrollment` | Prórroga, intento extra, acceso tardío, reasignar (ciclo nuevo) o cancelar; motivo obligatorio; queda en `enrollment_exceptions` y en la bitácora |
+| `markNotificationsRead(ids?)` | `mark_notifications_read` | Solo los avisos propios |
+| `publishCourse(id, resumen, recapacitar)` | `publish_course_version` | Con `recapacitar`, quien ya aprobó recibe un ciclo nuevo con 30 días |
+
+Automático (triggers y jobs):
+- Alta o cambio de una persona o de sus grupos → `app.apply_rules_for_user`: inscribe según las reglas vivas y cancela lo **no iniciado** que ya no le corresponde (D6).
+- Inscripción creada, resultado del curso y calificación manual → aviso en `notifications` (con `dedupe_key`).
+- `pg_cron` `daily-assignments` (14:00 UTC, 08:00 en CDMX) → `app.daily_assignments_job()`: renovaciones 30 días antes de `valid_until` y recordatorios a 7, 3 y 1 días y al vencer.
+

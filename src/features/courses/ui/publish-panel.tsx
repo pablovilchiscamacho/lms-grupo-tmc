@@ -6,7 +6,7 @@ import type { OrgOptions } from "@/features/org/queries";
 import { Alert, Card, Field } from "@/components/ui";
 import { Modal, SubmitButton } from "@/components/ui/client";
 import {
-  deleteCourse, duplicateCourse, enrollAudience, previewAudience, publishCourse, setCourseStatus, updateVersionSettings, type Audience,
+  deleteCourse, duplicateCourse, publishCourse, setCourseStatus, updateVersionSettings,
 } from "../actions";
 
 type Props = {
@@ -56,10 +56,12 @@ export function PublishPanel(p: Props) {
           <Alert kind="success" title={`Versión ${p.publishedVersion} publicada`}>Para cambiar el contenido, entra al paso «Contenido» y usa «Editar contenido».</Alert>
         )}
 
-        {p.can.assign && p.status === "published" && <AssignCard courseId={p.courseId} org={p.org} />}
-        {p.can.assign && p.status !== "published" && (
-          <Alert kind="info">Podrás asignar el curso en cuanto lo publiques.</Alert>
-        )}
+        {p.can.assign && (p.status === "published" ? (
+          <Card title="Asignar el curso">
+            <p className="text-sm text-slate-600">Asígnalo a un área, a un puesto (también a quienes entren después) o a personas específicas, con su fecha límite.</p>
+            <div className="mt-3"><a href={`/admin/asignaciones/nueva?curso=${p.courseId}`} className="btn-primary"><Users className="size-4" /> Asignar este curso</a></div>
+          </Card>
+        ) : <Alert kind="info">Podrás asignar el curso en cuanto lo publiques.</Alert>)}
       </div>
 
       <div className="space-y-6">
@@ -137,7 +139,7 @@ function PublishForm({ courseId, isUpdate, onDone }: { courseId: string; isUpdat
       {isUpdate && (
         <label className="flex items-start gap-2 text-sm text-slate-700">
           <input type="checkbox" className="mt-0.5 size-4" checked={retrain} onChange={(e) => setRetrain(e.target.checked)} />
-          <span>Requiere recapacitación<span className="block text-xs text-slate-500">Quienes ya lo terminaron tendrán que tomar la versión nueva (se aplica en la Fase 4).</span></span>
+          <span>Requiere recapacitación<span className="block text-xs text-slate-500">Quienes ya lo terminaron lo recibirán de nuevo, con 30 días para tomar la versión nueva.</span></span>
         </label>
       )}
       <div className="flex justify-end">
@@ -161,63 +163,5 @@ function DuplicateForm({ courseId, code, title }: { courseId: string; code: stri
       <Field label="Nombre" htmlFor="dup-title" error={fe.title} required><input id="dup-title" name="title" defaultValue={`${title} (copia)`} className="input" /></Field>
       <div className="flex justify-end"><SubmitButton pendingText="Duplicando…">Duplicar</SubmitButton></div>
     </form>
-  );
-}
-
-function AssignCard({ courseId, org }: { courseId: string; org: OrgOptions }) {
-  const [a, setA] = useState<Audience>({ company: "", branch: "", department: "", position: "" });
-  const [count, setCount] = useState<number | null>(null);
-  const [due, setDue] = useState("");
-  const [req, setReq] = useState("");
-  const [pending, start] = useTransition();
-  const [msg, setMsg] = useState<{ kind: "success" | "error" | "info"; text: string } | null>(null);
-  const set = (k: keyof Audience, v: string) => { setA((x) => ({ ...x, [k]: v, ...(k === "company" ? { branch: "", department: "", position: "" } : {}) })); setCount(null); };
-  const by = <T extends { company_id: string }>(l: T[]) => (a.company ? l.filter((x) => x.company_id === a.company) : l);
-  const sel = (k: keyof Audience, label: string, opts: [string, string][]) => (
-    <label className="text-xs text-slate-600">{label}
-      <select className="input mt-1" value={(a[k] as string) ?? ""} onChange={(e) => set(k, e.target.value)}>
-        <option value="">Todos</option>
-        {opts.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-      </select>
-    </label>
-  );
-  return (
-    <Card title="Asignar el curso">
-      <p className="mb-3 text-sm text-slate-600">Elige a quién se asigna. Se toma a las personas <strong>activas</strong> que cumplan todos los filtros, dentro de tu alcance.</p>
-      <div className="grid gap-3 sm:grid-cols-2">
-        {sel("company", "Empresa", org.companies.map((c) => [c.id, c.name]))}
-        {sel("branch", "Sucursal", by(org.branches).map((b) => [b.id, b.name]))}
-        {sel("department", "Departamento", by(org.departments).map((d) => [d.id, d.name]))}
-        {sel("position", "Puesto", by(org.positions).map((x) => [x.id, x.name]))}
-      </div>
-      <div className="mt-3 grid gap-3 sm:grid-cols-2">
-        <label className="text-xs text-slate-600">Fecha límite (opcional)
-          <input type="date" className="input mt-1" value={due} onChange={(e) => setDue(e.target.value)} />
-        </label>
-        <label className="text-xs text-slate-600">Tipo para estas personas
-          <select className="input mt-1" value={req} onChange={(e) => setReq(e.target.value)}>
-            <option value="">Como está definido en el curso</option>
-            <option value="mandatory">Obligatorio</option><option value="recommended">Recomendado</option><option value="optional">Opcional</option>
-          </select>
-        </label>
-      </div>
-      {msg && <div className="mt-3"><Alert kind={msg.kind}>{msg.text}</Alert></div>}
-      <div className="mt-4 flex flex-wrap items-center justify-end gap-2">
-        <button className="btn-secondary" disabled={pending} onClick={() => start(async () => {
-          const r = await previewAudience(a);
-          if (r.ok) { setCount(r.data!.count); setMsg({ kind: "info", text: `Se asignaría a ${r.data!.count} persona${r.data!.count === 1 ? "" : "s"}.` }); }
-          else setMsg({ kind: "error", text: r.error.message });
-        })}><Users className="size-4" /> ¿A cuántas personas?</button>
-        <button className="btn-primary" disabled={pending || !count} onClick={() => confirm(`¿Asignar el curso a ${count} personas?`) && start(async () => {
-          const r = await enrollAudience(courseId, a, due || null, req || null);
-          if (r.ok) {
-            const d = r.data!;
-            setMsg({ kind: "success", text: `Asignado a ${d.created} persona${d.created === 1 ? "" : "s"}.${d.skipped ? ` ${d.skipped} ya lo tenían.` : ""}${d.forbidden ? ` ${d.forbidden} fuera de tu alcance.` : ""}` });
-            setCount(null);
-          } else setMsg({ kind: "error", text: r.error.message });
-        })}>{pending && <Loader2 className="size-4 animate-spin" />} Asignar</button>
-      </div>
-      <p className="mt-3 text-xs text-slate-500">La asignación automática para quienes entren después (por puesto o departamento) llega en la Fase 4.</p>
-    </Card>
   );
 }

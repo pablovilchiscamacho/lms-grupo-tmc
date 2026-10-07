@@ -41,6 +41,7 @@ const BUSINESS: Record<string, string> = {
   SESSION_CONFLICT: "Este examen se abrió en otro dispositivo o pestaña. Continúa desde ahí o vuelve a entrar aquí para tomar el control.",
   RESPONSE_INVALID: "No se pudo guardar esa respuesta. Recarga la página.",
   ATTEMPT_NOT_GRADABLE: "Ese intento todavía no se puede calificar.",
+  ENROLLMENT_NOT_ACTIVE: "Esa inscripción ya no está activa.",
 };
 
 /** Mensajes que incluyen el detalle que manda la base. */

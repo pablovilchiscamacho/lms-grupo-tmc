@@ -10,8 +10,10 @@ import { updateUser } from "@/features/users/actions";
 import { UserForm } from "@/features/users/user-form";
 import { AccessPanel, RolesPanel, StatusPanel } from "@/features/users/user-admin-panels";
 import { AuditList, type AuditEntry } from "@/components/audit-list";
+import { enrollmentsFor, examsByVersion } from "@/features/assignments/queries";
+import { EnrollmentTable } from "@/features/assignments/ui/enrollment-table";
 import { fmtDate, fmtDateTime, STATUS_LABEL } from "@/lib/format";
-import { Alert, Avatar, Badge, Card, EmptyState, STATUS_TONE } from "@/components/ui";
+import { Alert, Avatar, Badge, Card, STATUS_TONE } from "@/components/ui";
 
 export const metadata: Metadata = { title: "Usuario" };
 
@@ -32,6 +34,8 @@ export default async function UserDetailPage({ params }: PageProps<"/admin/usuar
     history = (data ?? []) as AuditEntry[];
   }
   const editable = can(ctx, "users.update") && u.status !== "deleted";
+  const training = await enrollmentsFor({ user: u.id });
+  const trainingExams = await examsByVersion(training.map((t) => t.course_version_id ?? ""));
 
   return (
     <>
@@ -58,7 +62,7 @@ export default async function UserDetailPage({ params }: PageProps<"/admin/usuar
             )}
           </Card>
           <Card title="Historial de capacitación">
-            <EmptyState title="Sin cursos asignados">Curso, fechas, intentos, calificación y estado aparecerán aquí desde la Fase 4.</EmptyState>
+            <EnrollmentTable rows={training} exams={trainingExams} canAdjust={can(ctx, "enrollments.adjust")} revalidate={`/admin/usuarios/${u.id}`} show={{ course: true }} />
           </Card>
           {can(ctx, "audit.read") && (
             <Card title="Historial de cambios">

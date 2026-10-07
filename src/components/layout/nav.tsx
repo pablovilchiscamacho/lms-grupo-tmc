@@ -21,7 +21,7 @@ const isActive = (pathname: string, item: NavItem) =>
   item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(item.href + "/");
 
 /** Navegación del empleado: barra superior en escritorio, barra inferior en el celular. */
-export function EmployeeNav({ items }: { items: NavItem[] }) {
+export function EmployeeNav({ items, badges = {} }: { items: NavItem[]; badges?: Record<string, number> }) {
   const pathname = usePathname();
   const mobile = items.filter((i) => ["/", "/cursos", "/certificados", "/notificaciones", "/perfil"].includes(i.href));
   return (
@@ -35,6 +35,7 @@ export function EmployeeNav({ items }: { items: NavItem[] }) {
               className={clsx("flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm font-medium whitespace-nowrap transition",
                 active ? "bg-brand-50 text-brand-800" : "text-slate-600 hover:bg-slate-100 hover:text-slate-900")}>
               <Icon className="size-4" aria-hidden /> {item.label}
+              {badges[item.href] ? <span className="rounded-full bg-brand-700 px-1.5 text-[10px] font-semibold text-white">{badges[item.href]}</span> : null}
             </Link>
           );
         })}
@@ -45,8 +46,9 @@ export function EmployeeNav({ items }: { items: NavItem[] }) {
           const active = isActive(pathname, item);
           return (
             <Link key={item.href} href={item.href} aria-current={active ? "page" : undefined}
-              className={clsx("flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium", active ? "text-brand-800" : "text-slate-500")}>
+              className={clsx("relative flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium", active ? "text-brand-800" : "text-slate-500")}>
               <Icon className="size-5" aria-hidden /> {item.label}
+              {badges[item.href] ? <span className="absolute top-1 left-1/2 ml-1.5 rounded-full bg-brand-700 px-1.5 text-[10px] font-semibold text-white" aria-label={`${badges[item.href]} sin leer`}>{badges[item.href]}</span> : null}
             </Link>
           );
         })}

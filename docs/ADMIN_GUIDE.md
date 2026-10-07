@@ -29,6 +29,23 @@
 - **Acceso**: envía un enlace de restablecimiento o asigna una contraseña temporal.
 - **Estado**: Activo, Inactivo, Suspendido o Baja, siempre con motivo. Al desactivar, la persona pierde el acceso de inmediato y su historial se conserva.
 - **Historial de cambios**: quién cambió qué y cuándo.
+- **Capacitación**: sus cursos asignados, avance, calificación y estado. Con el botón **⋯** de cada curso das prórroga, un intento extra o acceso tardío, lo reasignas o lo cancelas, siempre con motivo.
+
+## Asignaciones (Capacitación → Asignaciones)
+1. **Nueva asignación** y elige el curso (debe estar publicado).
+2. **¿A quién?**
+   - *Por área o puesto*: combina empresa, sucursal, departamento y puesto. Deja marcada **«También a quienes entren después»** para que cada alta nueva en esa área reciba el curso sola.
+   - *Personas específicas*: búscalas por nombre o número de empleado.
+3. **Fechas**: días después de asignarse (lo normal para nuevos ingresos), una fecha fija o sin fecha.
+4. Pulsa **«¿A cuántas personas?»** para revisar el número y luego **Asignar**.
+
+Qué pasa solo:
+- Si alguien cambia de área o se da de baja, se cancela lo que **no había empezado**; lo empezado se conserva.
+- Cada persona recibe un aviso al asignársele un curso, 7, 3 y 1 días antes de la fecha límite, y al vencer.
+- Si el curso tiene vigencia (por ejemplo 12 meses), se reasigna solo 30 días antes de vencer.
+- Al publicar cambios de un curso puedes marcar **«Requiere recapacitación»**: quien ya lo aprobó lo recibe otra vez con 30 días.
+
+Para dejar de asignar a quienes lleguen, abre la asignación y pulsa **Desactivar**; lo ya asignado no cambia.
 
 ## Roles disponibles
 

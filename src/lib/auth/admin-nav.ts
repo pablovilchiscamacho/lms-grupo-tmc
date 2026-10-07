@@ -18,7 +18,7 @@ const DEFS: { title?: string; items: Def[] }[] = [
   { title: "Capacitación", items: [
     { href: "/admin/cursos", label: "Cursos", icon: "courses", perms: ["courses.read"] },
     { href: "/admin/banco-preguntas", label: "Banco de preguntas", icon: "questions", perms: ["questions.read"] },
-    { href: "/admin/asignaciones", label: "Asignaciones", icon: "assign", perms: ["assignments.read"], phase: 4 },
+    { href: "/admin/asignaciones", label: "Asignaciones", icon: "assign", perms: ["assignments.read"] },
     { href: "/admin/calificaciones", label: "Calificar", icon: "grading", perms: ["grading.grade"] },
     { href: "/admin/certificados", label: "Certificados", icon: "award", perms: ["certificates.read"], phase: 6 },
   ] },
