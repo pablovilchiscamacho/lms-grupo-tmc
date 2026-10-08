@@ -107,8 +107,9 @@ export default async function TracePage({ params }: PageProps<"/admin/trazabilid
                 <li key={q.position} className="rounded-lg border border-slate-100 p-3">
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <p className="text-sm font-medium text-slate-900">{q.position}. {q.snapshot.prompt}</p>
-                    <span className={clsx("flex items-center gap-1 text-xs font-medium", q.is_correct ? "text-emerald-700" : q.is_correct === false ? "text-red-700" : "text-slate-500")}>
-                      {q.is_correct ? <CheckCircle2 className="size-3.5" /> : q.is_correct === false ? <XCircle className="size-3.5" /> : null}
+                    <span className={clsx("flex items-center gap-1 text-xs font-medium", q.is_correct ? "text-emerald-700" : q.is_correct === false ? (Number(pts ?? 0) > 0 ? "text-amber-700" : "text-red-700") : "text-slate-500")}>
+                      {q.is_correct ? <CheckCircle2 className="size-3.5" /> : q.is_correct === false && !(Number(pts ?? 0) > 0) ? <XCircle className="size-3.5" /> : null}
+                      {q.is_correct === false && Number(pts ?? 0) > 0 && "Parcial · "}
                       {pts != null ? `${Number(pts)} de ${Number(q.points)} pts` : "Sin calificar"}
                     </span>
                   </div>

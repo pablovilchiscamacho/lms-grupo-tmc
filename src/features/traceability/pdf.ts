@@ -99,7 +99,7 @@ export async function renderTracePdf(t: EnrollmentTrace, generatedBy: string, tz
       const pts = q.final_points ?? q.auto_points;
       ensure(40);
       para(`${q.position}. ${q.snapshot.prompt}`, { font: bold, size: 8.5, gap: 0 });
-      para(`${QTYPE[q.snapshot.type] ?? q.snapshot.type} · ${pts != null ? `${Number(pts)} de ${Number(q.points)} pts` : "sin calificar"}${q.is_correct === true ? " · correcta" : q.is_correct === false ? " · incorrecta" : ""}`, { size: 7.5, color: MUTED, x: M + 10, w: CW - 10, gap: 0 });
+      para(`${QTYPE[q.snapshot.type] ?? q.snapshot.type} · ${pts != null ? `${Number(pts)} de ${Number(q.points)} pts` : "sin calificar"}${q.is_correct === true ? " · correcta" : q.is_correct === false ? (Number(pts ?? 0) > 0 ? " · parcialmente correcta" : " · incorrecta") : ""}`, { size: 7.5, color: MUTED, x: M + 10, w: CW - 10, gap: 0 });
       para(`Respondió: ${d.response}`, { size: 8.5, x: M + 10, w: CW - 10, gap: 0 });
       if (d.correct) para(`Correcta: ${d.correct}`, { size: 8.5, x: M + 10, w: CW - 10, color: GREEN, gap: 0 });
       for (const g of q.grades) para(`Calificó ${g.grader} · ${Number(g.score_pct)}% · ${fmtDateTime(g.created_at, tz)}${g.is_override ? " · recalificación" : ""}${g.feedback ? ` · «${g.feedback}»` : ""}`, { size: 7.5, x: M + 10, w: CW - 10, color: MUTED, gap: 0 });
