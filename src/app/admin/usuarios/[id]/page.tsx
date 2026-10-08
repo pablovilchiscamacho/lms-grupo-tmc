@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, FileDown } from "lucide-react";
 import { requirePermission, can } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { getUser, listRoles } from "@/features/users/queries";
@@ -47,6 +47,9 @@ export default async function UserDetailPage({ params }: PageProps<"/admin/usuar
           <p className="text-sm text-slate-500">{[u.position?.name, u.department?.name, u.company?.name].filter(Boolean).join(" · ")}</p>
         </div>
         <Badge tone={STATUS_TONE[u.status]}>{STATUS_LABEL[u.status]}</Badge>
+        {(can(ctx, "reports.read") || can(ctx, "progress.read")) && (
+          <a href={`/api/expediente/${u.id}`} className="btn-secondary"><FileDown className="size-4" /> Expediente PDF</a>
+        )}
       </div>
       {u.status !== "active" && u.status_reason && (
         <div className="mb-4"><Alert kind="warning" title={`${STATUS_LABEL[u.status]} desde ${fmtDate(u.status_changed_at, tz)}`}>{u.status_reason}</Alert></div>

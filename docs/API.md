@@ -174,3 +174,13 @@ Definiciones (solo inscripciones **activas y obligatorias** de personas activas)
 
 Las constancias no se pueden insertar, cambiar ni borrar desde la API (sin privilegios + `guard_no_delete`).
 
+## Fase 7: reportes
+
+Los 10 reportes de la §24 salen de una sola RPC, `report(clave, filtros, límite, desplazamiento)`, que exige `reports.read` y aplica el alcance una sola vez. Claves: `compliance`, `overdue`, `failed`, `grades`, `exams`, `hours`, `certificates`, `courses`, `users` y `activity`. Las columnas y los filtros de cada uno están en `src/features/reports/catalog.ts`.
+
+| Consulta / ruta | RPC | Reglas |
+|---|---|---|
+| `/admin/reportes/[slug]` | `report` | Vista previa paginada de 100 filas, con los mismos filtros que los tableros más `estado` y fechas |
+| `GET /api/reports/[slug]?formato=xlsx\|csv\|pdf` | `report` (páginas de 1 000) + `log_report_export` | Exige `reports.export`. Excel y CSV hasta 50 000 filas; PDF hasta 3 000. CSV con BOM y protección contra fórmulas. Cada exportación queda en la bitácora (`report.exported`) con filtros, formato y filas |
+| `GET /api/expediente/[userId]` | `training_record` | Expediente de capacitación en PDF: la propia persona, o quien tiene `reports.read` / `progress.read` sobre ella. Descargar el de otra persona queda en la bitácora |
+

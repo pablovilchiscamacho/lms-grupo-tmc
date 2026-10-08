@@ -19,7 +19,7 @@ Las pruebas de base de datos no necesitan Docker ni internet: cada archivo crea 
 - `pg_cron` no existe en PGlite: la migración de jobs se salta y las funciones (`audit.seal()`) se prueban llamándolas directamente.
 - PGlite es Postgres 18 y Supabase usa 15 o 17, así que las migraciones evitan la sintaxis exclusiva de versiones nuevas.
 
-## Cobertura actual: 116 pruebas (Fase 1: 39 · Fase 2: 23 · Fase 3: 19 + 2 del importador · Fase 4: 13 · Fase 5: 13 · Fase 6: 7) + prueba de carga
+## Cobertura actual: 127 pruebas (Fase 1: 39 · Fase 2: 23 · Fase 3: 19 + 2 del importador · Fase 4: 13 · Fase 5: 13 · Fase 6: 7 · Fase 7: 9 + 2 de fechas) + prueba de carga
 
 | Área (§65) | Pruebas |
 |---|---|
@@ -108,6 +108,19 @@ Se probó en vivo contra Supabase: inicio del administrador con «Requiere atenc
 | **Revocación** | Solo con `certificates.revoke` y motivo; se verifica como revocada; queda en la bitácora; la vigencia vencida se verifica como expirada |
 
 Se probó en vivo: las 2 constancias de lo ya aprobado se emitieron al aplicar la migración, el PDF se generó y se revisó visualmente, y la verificación pública funciona sin sesión.
+
+### Fase 7 (`tests/db/phase7.test.ts`)
+
+| Área | Pruebas |
+|---|---|
+| **Reportes** | Los 10 responden; vencidos, reprobados, calificaciones, certificados y cursos traen a las personas y cifras correctas; la paginación no repite ni pierde filas; la actividad registra cada tipo de evento |
+| **Alcance** | RH de EA no ve a TMC en **ninguno** de los 10 reportes; el jefe solo ve su línea de reporte; un empleado no consulta ni exporta |
+| **Exportación** | Cada exportación queda en la bitácora con filtros y filas; formato inválido → `VALIDATION` |
+| **Expediente** | Lo ven el jefe, RH en su empresa y la propia persona; un compañero o RH de otra empresa no |
+
+`src/lib/format.test.ts`: una fecha sin hora (ingreso) ya no se recorre un día por la zona horaria.
+
+La prueba de carga incluye los reportes: cumplimiento, vencidos, cursos y horas entre 140 y 310 ms; actividad (9 tipos de evento sobre 100 000 inscripciones) 770 ms.
 
 ## Regla para las fases siguientes
 Cada tabla nueva llega con sus pruebas de RLS: qué **puede** y qué **no puede** hacer cada rol, siempre con usuarios de dos empresas distintas. Cada RPC llega con su prueba de permiso negado.

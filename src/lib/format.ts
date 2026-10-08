@@ -4,9 +4,14 @@ import { es } from "date-fns/locale";
 
 export const DEFAULT_TZ = "America/Mexico_City";
 
-/** Fecha en la zona horaria de la empresa (los timestamps se guardan en UTC). */
+/** Fecha en la zona horaria de la empresa (los timestamps se guardan en UTC).
+ *  Una fecha sin hora ("2024-03-01", p. ej. el ingreso) es un día del calendario: no se convierte de zona. */
 export function fmtDate(value: string | Date | null | undefined, tz = DEFAULT_TZ, pattern = "dd/MM/yyyy") {
   if (!value) return "—";
+  if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const [y, m, d] = value.split("-").map(Number);
+    return format(new Date(y, m - 1, d), pattern, { locale: es });
+  }
   return format(new TZDate(new Date(value), tz), pattern, { locale: es });
 }
 export const fmtDateTime = (v: string | Date | null | undefined, tz = DEFAULT_TZ) => fmtDate(v, tz, "dd/MM/yyyy HH:mm");

@@ -23,7 +23,7 @@ const DEFS: { title?: string; items: Def[] }[] = [
     { href: "/admin/certificados", label: "Certificados", icon: "award", perms: ["certificates.read"] },
   ] },
   { title: "Control", items: [
-    { href: "/admin/reportes", label: "Reportes", icon: "reports", perms: ["reports.read"], phase: 7 },
+    { href: "/admin/reportes", label: "Reportes", icon: "reports", perms: ["reports.read"] },
     { href: "/admin/notificaciones", label: "Notificaciones", icon: "bell", perms: ["notifications.manage"], phase: 8 },
     { href: "/admin/auditoria", label: "Auditoría", icon: "audit", perms: ["audit.read"] },
     { href: "/admin/configuracion", label: "Configuración", icon: "settings", perms: ["settings.manage"], phase: 9 },

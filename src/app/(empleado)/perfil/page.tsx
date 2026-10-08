@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { KeyRound, ShieldCheck } from "lucide-react";
+import { FileDown, KeyRound, ShieldCheck } from "lucide-react";
 import { requireUser } from "@/lib/auth/session";
 import { fmtDate, fmtDateTime, SCOPE_LABEL } from "@/lib/format";
 import { Avatar, Badge, Card, EmptyState, PageHeader, Stat } from "@/components/ui";
@@ -27,7 +27,7 @@ export default async function ProfilePage() {
   ];
   return (
     <>
-      <PageHeader title="Mi perfil" />
+      <PageHeader title="Mi perfil" actions={<a href={`/api/expediente/${ctx.profile.id}`} className="btn-secondary"><FileDown className="size-4" /> Mi expediente PDF</a>} />
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         <div className="space-y-6">
           <Card>

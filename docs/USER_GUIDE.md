@@ -16,3 +16,6 @@ En el celular, el menú está en la parte de abajo de la pantalla.
 ## Tus constancias
 Cuando apruebas un curso, tu constancia aparece en **Certificados** (y te llega un aviso). Pulsa **Descargar PDF** para guardarla o imprimirla. El código QR permite que cualquiera compruebe que es auténtica.
 
+## Tu expediente
+En **Mi perfil**, el botón **Mi expediente PDF** descarga tu historial completo de capacitación: cursos, calificaciones, horas y constancias.
+

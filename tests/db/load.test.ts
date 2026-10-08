@@ -61,6 +61,11 @@ describe.skipIf(!process.env.LOAD)("Carga: 5 000 personas · 100 000 inscripcion
       await time("actividad", () => q(db, SUPER, "select public.dashboard_activity('{}', 10)")),
       await time("foto diaria", () => db.query("select app.compliance_snapshot_job()")),
       await time("evolución", () => q(db, SUPER, "select public.dashboard_trend('{}')")),
+      await time("reporte cumplimiento (1 000 filas)", () => q(db, SUPER, "select public.report('compliance', '{}', 1000, 0)")),
+      await time("reporte vencidos (1 000 filas)", () => q(db, SUPER, "select public.report('overdue', '{}', 1000, 0)")),
+      await time("reporte cursos", () => q(db, SUPER, "select public.report('courses', '{}', 1000, 0)")),
+      await time("reporte horas (1 000 filas)", () => q(db, SUPER, "select public.report('hours', '{}', 1000, 0)")),
+      await time("reporte actividad (1 000 filas)", () => q(db, SUPER, "select public.report('activity', '{\"from\":\"2000-01-01\"}', 1000, 0)")),
     ];
     const n = (await db.query<{ n: number }>("select count(*)::int as n from public.enrollments")).rows[0].n;
     console.log(`inscripciones: ${n}`);

@@ -61,6 +61,13 @@ Cada quien ve solo lo de su alcance: un jefe ve a su equipo; RH, su empresa; Dir
 - **Revocar** (ícono ⊘): solo el Super Admin, con motivo. No se puede deshacer.
 - **Firma de las constancias**: escribe el nombre y el cargo de quien firma. Se usa en las constancias nuevas; las ya emitidas conservan la suya.
 
+## Reportes (Control → Reportes)
+1. Elige uno de los 10 reportes: Cumplimiento, Cursos vencidos, Personas reprobadas, Calificaciones, Exámenes, Horas de capacitación, Certificados, Cursos, Usuarios o Actividad.
+2. Ajusta los filtros (empresa, sucursal, departamento, puesto, jefe, curso, fechas o estado) y pulsa **Aplicar filtros**. Verás una vista previa.
+3. Descárgalo con **Excel**, **CSV** o **PDF**. El Excel trae una segunda hoja con los filtros usados y quién lo generó.
+
+Cada descarga queda registrada en la bitácora. En la ficha de cada persona, **Expediente PDF** descarga todo su historial: datos, cursos, calificaciones, horas y constancias. Cada empleado también puede descargar el suyo desde **Mi perfil**.
+
 ## Roles disponibles
 
 | Rol | Para quién | Puede |
