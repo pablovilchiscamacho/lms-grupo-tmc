@@ -162,3 +162,15 @@ Definiciones (solo inscripciones **activas y obligatorias** de personas activas)
 
 `pg_cron` `compliance-snapshot` (07:00 UTC, 01:00 en CDMX) → `app.compliance_snapshot_job()`. La tabla no se lee directo: solo por `dashboard_trend`.
 
+## Fase 6: constancias
+
+| Acción / ruta | RPC | Reglas en el servidor |
+|---|---|---|
+| (automático) | `app.issue_certificate(enrollment)` desde el trigger `enrollments_issue_certificate` | Al terminar un curso con `issues_certificate`: folio consecutivo por año con bloqueo (`app.certificate_counters`), código aleatorio de 16 caracteres (80 bits), copias de nombre, curso, empresa, instructor, firma, calificación y vigencia. Idempotente. Avisa con `certificate_ready` |
+| `GET /api/certificates/[id]/pdf` | RLS de `certificates` + `attach_certificate_pdf` (service role) | La propia o `certificates.read` en alcance. La primera descarga genera el PDF (pdf-lib + QR), lo guarda en el bucket `certificates` y en `files` con su sha256; después siempre entrega el mismo archivo. Revocada → 410. En local (QR a localhost) se entrega sin guardar |
+| `revokeCertificate(id, motivo)` | `revoke_certificate` | `certificates.revoke` sobre la persona; motivo obligatorio; queda en la bitácora |
+| `saveCertificateSettings(firma)` | `settings` (RLS `settings.manage`) | Firma de las constancias **nuevas** |
+| `/verify/certificate/[code]` (pública) | `verify_certificate(code)` (único RPC para `anon`) | Acepta minúsculas y guiones. Devuelve solo folio, nombre, curso, empresa, fechas, calificación y estado (válida, vencida o revocada). Límite de 30 consultas por minuto por IP (`hit_rate_limit`) |
+
+Las constancias no se pueden insertar, cambiar ni borrar desde la API (sin privilegios + `guard_no_delete`).
+

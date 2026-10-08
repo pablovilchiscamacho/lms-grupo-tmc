@@ -12,3 +12,7 @@
 - **Perfil**: tus datos, tu historial y el cambio de contraseña. Puedes actualizar tu teléfono; los demás datos los corrige Recursos Humanos.
 
 En el celular, el menú está en la parte de abajo de la pantalla.
+
+## Tus constancias
+Cuando apruebas un curso, tu constancia aparece en **Certificados** (y te llega un aviso). Pulsa **Descargar PDF** para guardarla o imprimirla. El código QR permite que cualquiera compruebe que es auténtica.
+

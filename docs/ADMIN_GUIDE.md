@@ -54,6 +54,13 @@ Para dejar de asignar a quienes lleguen, abre la asignación y pulsa **Desactiva
 
 Cada quien ve solo lo de su alcance: un jefe ve a su equipo; RH, su empresa; Dirección, todo el grupo. El cumplimiento cuenta solo los cursos **obligatorios**. La gráfica de evolución guarda una foto cada noche, así que se va llenando con el tiempo.
 
+## Certificados (Capacitación → Certificados)
+- Se emiten **solos** cuando alguien aprueba un curso que tiene marcada la casilla «Da certificado al terminar». Cada uno tiene un folio (TMC-2026-000001) y un código QR.
+- Quien escanea el QR ve si la constancia es **válida**, **vencida** o **revocada**, sin necesidad de entrar a la plataforma. También se puede verificar escribiendo el código en `/verify/certificate`.
+- Busca por nombre, folio o curso, y filtra por estado.
+- **Revocar** (ícono ⊘): solo el Super Admin, con motivo. No se puede deshacer.
+- **Firma de las constancias**: escribe el nombre y el cargo de quien firma. Se usa en las constancias nuevas; las ya emitidas conservan la suya.
+
 ## Roles disponibles
 
 | Rol | Para quién | Puede |

@@ -19,7 +19,7 @@ Las pruebas de base de datos no necesitan Docker ni internet: cada archivo crea 
 - `pg_cron` no existe en PGlite: la migración de jobs se salta y las funciones (`audit.seal()`) se prueban llamándolas directamente.
 - PGlite es Postgres 18 y Supabase usa 15 o 17, así que las migraciones evitan la sintaxis exclusiva de versiones nuevas.
 
-## Cobertura actual: 109 pruebas (Fase 1: 39 · Fase 2: 23 · Fase 3: 19 + 2 del importador · Fase 4: 13 · Fase 5: 13) + prueba de carga
+## Cobertura actual: 116 pruebas (Fase 1: 39 · Fase 2: 23 · Fase 3: 19 + 2 del importador · Fase 4: 13 · Fase 5: 13 · Fase 6: 7) + prueba de carga
 
 | Área (§65) | Pruebas |
 |---|---|
@@ -96,6 +96,18 @@ Se probó en vivo contra Supabase: asignación por regla a EA · Ventas (2 perso
 `LOAD=1 npx vitest run tests/db/load.test.ts` crea 5 000 personas y 100 000 inscripciones sintéticas y mide cada consulta. Resultado en PGlite (más lento que Supabase): todas entre 2 y 160 ms; la meta de la Fase 5 era menos de 1 s.
 
 Se probó en vivo contra Supabase: inicio del administrador con «Requiere atención» y actividad, Cumplimiento por persona y por departamento, Dirección con evolución mensual, y la vista de un jefe limitada a su equipo.
+
+### Fase 6 (`tests/db/phase6.test.ts`)
+
+| Área | Pruebas |
+|---|---|
+| **Emisión** | Al terminar se emite sola con folio consecutivo, código de 16 caracteres, vigencia y aviso; no se emite si el curso no da constancia; no se duplica |
+| **Integridad** | Nadie (ni el Super Admin) inserta, cambia o borra constancias por la API; `attach_certificate_pdf` solo para el servidor |
+| **Lectura** | Cada quien ve las suyas; RH las de su empresa |
+| **Verificación** | Sin sesión, con guiones o minúsculas; solo datos mínimos (sin correo ni número de empleado); código inexistente → nada |
+| **Revocación** | Solo con `certificates.revoke` y motivo; se verifica como revocada; queda en la bitácora; la vigencia vencida se verifica como expirada |
+
+Se probó en vivo: las 2 constancias de lo ya aprobado se emitieron al aplicar la migración, el PDF se generó y se revisó visualmente, y la verificación pública funciona sin sesión.
 
 ## Regla para las fases siguientes
 Cada tabla nueva llega con sus pruebas de RLS: qué **puede** y qué **no puede** hacer cada rol, siempre con usuarios de dos empresas distintas. Cada RPC llega con su prueba de permiso negado.

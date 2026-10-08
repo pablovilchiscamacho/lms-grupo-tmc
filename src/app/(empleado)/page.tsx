@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { AlertTriangle, BookOpen, CheckCircle2, Clock } from "lucide-react";
+import { AlertTriangle, BookOpen, CheckCircle2, Clock, Download } from "lucide-react";
 import { requireUser } from "@/lib/auth/session";
 import { myEnrollments } from "@/features/learning/queries";
+import { certificatesByEnrollment } from "@/features/certificates/queries";
 import { CourseCard } from "@/features/learning/ui/course-card";
 import { daysLeft, fmtDate } from "@/lib/format";
 import { Alert, Card, EmptyState, Stat } from "@/components/ui";
@@ -10,7 +11,7 @@ export default async function EmployeeHome({ searchParams }: PageProps<"/">) {
   const ctx = await requireUser();
   const sp = await searchParams;
   const tz = ctx.profile.company.timezone;
-  const list = await myEnrollments();
+  const [list, certs] = await Promise.all([myEnrollments(), certificatesByEnrollment(ctx.profile.id)]);
   const pending = list.filter((e) => e.progress_status !== "completed");
   const completed = list.filter((e) => e.progress_status === "completed");
   const dueSoon = pending.filter((e) => { const d = daysLeft(e.due_at); return d !== null && d <= 7; });
@@ -63,7 +64,13 @@ export default async function EmployeeHome({ searchParams }: PageProps<"/">) {
             {completed.slice(0, 5).map((e) => (
               <li key={e.id} className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm">
                 <span className="flex items-center gap-2 text-slate-800"><CheckCircle2 className="size-4 text-emerald-600" /> {e.course?.title}</span>
-                <span className="text-xs text-slate-500">{fmtDate(e.content_completed_at, tz)} · certificado en la Fase 6</span>
+                <span className="flex items-center gap-3 text-xs text-slate-500">
+                  {e.final_score != null && <span className="font-medium text-slate-700">{Number(e.final_score)}%</span>}
+                  {fmtDate(e.content_completed_at, tz)}
+                  {certs.get(e.id)?.status === "valid" && (
+                    <a href={`/api/certificates/${certs.get(e.id)!.id}/pdf`} className="inline-flex items-center gap-1 font-medium text-brand-700 hover:underline"><Download className="size-3.5" /> Constancia</a>
+                  )}
+                </span>
               </li>
             ))}
           </ul>

@@ -20,7 +20,7 @@ const DEFS: { title?: string; items: Def[] }[] = [
     { href: "/admin/banco-preguntas", label: "Banco de preguntas", icon: "questions", perms: ["questions.read"] },
     { href: "/admin/asignaciones", label: "Asignaciones", icon: "assign", perms: ["assignments.read"] },
     { href: "/admin/calificaciones", label: "Calificar", icon: "grading", perms: ["grading.grade"] },
-    { href: "/admin/certificados", label: "Certificados", icon: "award", perms: ["certificates.read"], phase: 6 },
+    { href: "/admin/certificados", label: "Certificados", icon: "award", perms: ["certificates.read"] },
   ] },
   { title: "Control", items: [
     { href: "/admin/reportes", label: "Reportes", icon: "reports", perms: ["reports.read"], phase: 7 },
