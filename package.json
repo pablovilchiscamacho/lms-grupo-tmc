@@ -18,7 +18,8 @@
     "db:migrate": "node --env-file=.env.local scripts/db-migrate.mjs",
     "email:key": "node scripts/set-email-key.mjs",
     "db:backup": "node scripts/db-backup.mjs",
-    "db:restore": "node scripts/db-restore.mjs"
+    "db:restore": "node scripts/db-restore.mjs",
+    "pilot:reset": "node scripts/pilot-reset.mjs"
   },
   "dependencies": {
     "@date-fns/tz": "^1.5.0",

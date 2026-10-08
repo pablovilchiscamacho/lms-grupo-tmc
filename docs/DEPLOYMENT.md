@@ -125,3 +125,8 @@ Probado: el respaldo real de producción (47 tablas) se restauró en una base va
 - `GET /api/health`: versión publicada y dominio de verificación (para un monitor externo de disponibilidad).
 - Errores del servidor: Vercel → Logs (cada error trae un código que el usuario ve en pantalla).
 
+## Arranque del piloto (hecho el 2026-10-07)
+1. `npm run pilot:reset` muestra qué se borraría; `npm run pilot:reset -- --ejecutar --confirmar <ref>` lo hace: respaldo cifrado previo (`~/Respaldos-LMS/lms-respaldo-antes-del-piloto-*.lmsbk`), borrado de todos los datos de prueba en una sola transacción (se conservan empresas, sucursales, departamentos, puestos, roles, permisos y configuración), borrado de las cuentas de acceso y de los archivos de Storage, y MFA obligatorio otra vez para Super Admin, Capacitación y RH. La bitácora arranca nueva con el evento `system.pilot_reset` y la huella del respaldo.
+2. `npm run bootstrap:admin -- --email … --nombre … --apellido … --empresa "Grupo TMC" --temporal` crea al Super Admin real (la contraseña temporal se guardó en un archivo del Escritorio, no en el chat).
+3. Primer acceso: cambiar la contraseña → **Administración** → configurar la verificación en dos pasos (Google o Microsoft Authenticator).
+
