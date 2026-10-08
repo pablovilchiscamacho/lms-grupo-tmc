@@ -100,3 +100,10 @@ Una vez enlazado el proyecto: `npm run db:types` genera `src/types/database.ts`.
 
 **Restablecer contraseña**: asunto "Restablece tu contraseña":
 > Recibimos una solicitud para restablecer tu contraseña. Entra a este enlace (vence en 1 hora): **[Restablecer contraseña]**. Si no la pediste, ignora este correo: tu contraseña no cambia.
+
+## Correo (Resend)
+1. Cuenta en resend.com → **Domains** → agregar el dominio y copiar sus registros DNS (SPF, DKIM y, recomendado, DMARC) en el proveedor del dominio. Esperar a que diga *Verified*.
+2. **API Keys** → crear una con permiso *Sending access* → pegarla en `.env.local` como `RESEND_API_KEY=` → `npm run email:key` (la guarda cifrada en Supabase Vault).
+3. En la plataforma: **Notificaciones** → remitente con el dominio verificado → encender el correo → mandar una prueba.
+4. Recuperación de contraseña (la manda Supabase Auth): Supabase → Authentication → Emails → **SMTP Settings** → host `smtp.resend.com`, puerto `465`, usuario `resend`, contraseña = la clave de Resend, remitente con el dominio verificado. Sin esto, Supabase solo envía unos pocos correos por hora y únicamente a los miembros del equipo del proyecto.
+

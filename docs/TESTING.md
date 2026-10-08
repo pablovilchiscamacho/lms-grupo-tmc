@@ -19,7 +19,7 @@ Las pruebas de base de datos no necesitan Docker ni internet: cada archivo crea 
 - `pg_cron` no existe en PGlite: la migración de jobs se salta y las funciones (`audit.seal()`) se prueban llamándolas directamente.
 - PGlite es Postgres 18 y Supabase usa 15 o 17, así que las migraciones evitan la sintaxis exclusiva de versiones nuevas.
 
-## Cobertura actual: 127 pruebas (Fase 1: 39 · Fase 2: 23 · Fase 3: 19 + 2 del importador · Fase 4: 13 · Fase 5: 13 · Fase 6: 7 · Fase 7: 9 + 2 de fechas) + prueba de carga
+## Cobertura actual: 136 pruebas (Fase 1: 39 · Fase 2: 23 · Fase 3: 19 + 2 del importador · Fase 4: 13 · Fase 5: 13 · Fase 6: 7 · Fase 7: 9 + 2 de fechas · Fase 8: 9) + prueba de carga
 
 | Área (§65) | Pruebas |
 |---|---|
@@ -121,6 +121,17 @@ Se probó en vivo: las 2 constancias de lo ya aprobado se emitieron al aplicar l
 `src/lib/format.test.ts`: una fecha sin hora (ingreso) ya no se recorre un día por la zona horaria.
 
 La prueba de carga incluye los reportes: cumplimiento, vencidos, cursos y horas entre 140 y 310 ms; actividad (9 tipos de evento sobre 100 000 inscripciones) 770 ms.
+
+### Fase 8 (`tests/db/phase8.test.ts`)
+El *shim* simula Vault (`vault.decrypted_secrets`) y `pg_net` (`net.http_post` guarda la petición; la prueba escribe la respuesta en `net._http_response`).
+
+| Área | Pruebas |
+|---|---|
+| **Encolado** | Apagado no encola; encendido encola solo a quien tiene correo real y solo los tipos encendidos |
+| **Plantilla** | Escapa HTML y lleva el enlace correcto |
+| **Envío** | Sin clave no manda; con clave manda un lote a Resend con la clave en el encabezado; respuesta 200 → enviados con su id; 422/500 → reintento individual con espera y, tras 4 intentos, fallido |
+| **Avisos nuevos** | Examen en revisión avisa a quien califica; recordatorios configurables; resumen del jefe una sola vez por semana y solo a quien tiene permiso de seguimiento |
+| **Permisos** | Empleado y RH no ven ni cambian la configuración ni mandan pruebas; el estado nunca expone la clave |
 
 ## Regla para las fases siguientes
 Cada tabla nueva llega con sus pruebas de RLS: qué **puede** y qué **no puede** hacer cada rol, siempre con usuarios de dos empresas distintas. Cada RPC llega con su prueba de permiso negado.

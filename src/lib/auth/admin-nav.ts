@@ -24,7 +24,7 @@ const DEFS: { title?: string; items: Def[] }[] = [
   ] },
   { title: "Control", items: [
     { href: "/admin/reportes", label: "Reportes", icon: "reports", perms: ["reports.read"] },
-    { href: "/admin/notificaciones", label: "Notificaciones", icon: "bell", perms: ["notifications.manage"], phase: 8 },
+    { href: "/admin/notificaciones", label: "Notificaciones", icon: "bell", perms: ["notifications.manage"] },
     { href: "/admin/auditoria", label: "Auditoría", icon: "audit", perms: ["audit.read"] },
     { href: "/admin/configuracion", label: "Configuración", icon: "settings", perms: ["settings.manage"], phase: 9 },
   ] },

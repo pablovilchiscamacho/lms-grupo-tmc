@@ -68,6 +68,13 @@ Cada quien ve solo lo de su alcance: un jefe ve a su equipo; RH, su empresa; Dir
 
 Cada descarga queda registrada en la bitácora. En la ficha de cada persona, **Expediente PDF** descarga todo su historial: datos, cursos, calificaciones, horas y constancias. Cada empleado también puede descargar el suyo desde **Mi perfil**.
 
+## Notificaciones (Control → Notificaciones)
+- **Correo**: enciende «Enviar los avisos también por correo». Quien no tiene correo los sigue viendo en la plataforma.
+- **Qué avisos se mandan**: marca o desmarca cada tipo (curso asignado, por vencer, vencido, aprobado, constancia lista, examen por calificar, resumen semanal para jefes…).
+- **Recordatorios**: elige cuántos días antes de la fecha límite se avisa, si se avisa al vencer y cada cuántos días se repite.
+- **Mandar un correo de prueba** para comprobar que llegan (revisa también spam).
+- **Últimos correos**: a quién se mandó cada aviso y si llegó o falló.
+
 ## Roles disponibles
 
 | Rol | Para quién | Puede |

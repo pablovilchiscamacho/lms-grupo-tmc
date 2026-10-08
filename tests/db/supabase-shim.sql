@@ -39,3 +39,18 @@ create table storage.buckets (
   id text primary key, name text not null, public boolean default false,
   file_size_limit bigint, allowed_mime_types text[], created_at timestamptz default now()
 );
+
+-- Vault (secretos cifrados): en pruebas, una tabla simple.
+create schema vault;
+create table vault.secrets (id uuid primary key default gen_random_uuid(), name text unique, secret text);
+create view vault.decrypted_secrets as select id, name, secret as decrypted_secret from vault.secrets;
+create function vault.create_secret(p_secret text, p_name text) returns uuid language sql as $$
+  insert into vault.secrets (name, secret) values (p_name, p_secret) returning id $$;
+
+-- pg_net (HTTP asíncrono): en pruebas guarda la petición y la respuesta la escribe la prueba.
+create schema net;
+create table net.http_requests_log (id bigserial primary key, url text, body jsonb, headers jsonb, created_at timestamptz default now());
+create table net._http_response (id bigint primary key, status_code int, content text, error_msg text, created timestamptz default now());
+create function net.http_post(url text, body jsonb default '{}', params jsonb default '{}', headers jsonb default '{}', timeout_milliseconds int default 5000)
+returns bigint language sql as $$
+  insert into net.http_requests_log (url, body, headers) values (url, body, headers) returning id $$;

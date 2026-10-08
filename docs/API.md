@@ -184,3 +184,21 @@ Los 10 reportes de la §24 salen de una sola RPC, `report(clave, filtros, límit
 | `GET /api/reports/[slug]?formato=xlsx\|csv\|pdf` | `report` (páginas de 1 000) + `log_report_export` | Exige `reports.export`. Excel y CSV hasta 50 000 filas; PDF hasta 3 000. CSV con BOM y protección contra fórmulas. Cada exportación queda en la bitácora (`report.exported`) con filtros, formato y filas |
 | `GET /api/expediente/[userId]` | `training_record` | Expediente de capacitación en PDF: la propia persona, o quien tiene `reports.read` / `progress.read` sobre ella. Descargar el de otra persona queda en la bitácora |
 
+## Fase 8: correo
+
+Todo el envío vive en la base (sin llaves adicionales en Vercel):
+
+1. Cada aviso nuevo (`notifications`) dispara `app.on_notification_email`: si `settings.email.enabled`, ese tipo está encendido y la persona tiene correo real, se encola en `email_outbox` (único por `dedupe_key = n:<aviso>`).
+2. `pg_cron` `email-dispatch` (cada 2 min) → `app.dispatch_emails()`: concilia las respuestas de la vuelta anterior (`net._http_response`) y manda un lote de hasta 100 con `pg_net` a `https://api.resend.com/emails/batch`. 429/5xx → reintento con espera exponencial; 4xx → reintento individual; 4 intentos → `failed`.
+3. `email-expire` (diario) cancela lo que lleva más de 3 días sin salir.
+
+La clave de Resend se guarda cifrada en Supabase Vault (`resend_api_key`) con `npm run email:key`, que la lee de `.env.local` y nunca la imprime.
+
+| Acción | RPC | Reglas |
+|---|---|---|
+| `saveNotificationSettings(email, recordatorios)` | `save_notification_settings` | `notifications.manage` (grupo). Remitente validado; días de recordatorio 0–60 (máximo 6); queda en la bitácora |
+| `sendTestEmail(para)` | `send_test_email` | `notifications.manage`; 5 por hora; sale aunque el correo esté apagado |
+| (pantalla) | `email_status` | Estado, configuración, si hay clave (nunca la clave), en cola, enviados y fallidos |
+
+Avisos nuevos: `review_pending` (a los instructores del curso o, si no hay, a quien califica en todo el grupo) y `team_overdue` (lunes, a cada jefe con `progress.read` con su línea de reporte atrasada). Los recordatorios de fecha límite ahora se configuran (`settings.reminders`: días antes, aviso al vencer y repetición).
+
