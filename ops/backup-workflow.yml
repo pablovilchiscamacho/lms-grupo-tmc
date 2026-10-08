@@ -19,8 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      NEXT_PUBLIC_SUPABASE_URL: https://muhiigbchqldixyxrsvt.supabase.co
-      SUPABASE_DB_HOST: aws-1-ca-central-1.pooler.supabase.com
+      NEXT_PUBLIC_SUPABASE_URL: https://srehmgbcujdixhyygnmd.supabase.co
+      SUPABASE_DB_HOST: aws-0-us-east-1.pooler.supabase.com
       SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
       BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
     steps:

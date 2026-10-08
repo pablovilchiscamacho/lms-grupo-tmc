@@ -21,7 +21,7 @@ export function projectRef(env) {
 export async function connect(env, { host, ref } = {}) {
   const r = ref ?? projectRef(env);
   if (!r || !env.SUPABASE_DB_PASSWORD) throw new Error("Faltan NEXT_PUBLIC_SUPABASE_URL o SUPABASE_DB_PASSWORD");
-  const c = new pg.Client({ host: host ?? env.SUPABASE_DB_HOST ?? "aws-1-ca-central-1.pooler.supabase.com", port: 5432,
+  const c = new pg.Client({ host: host ?? env.SUPABASE_DB_HOST ?? "aws-0-us-east-1.pooler.supabase.com", port: 5432,
     user: `postgres.${r}`, password: env.SUPABASE_DB_PASSWORD, database: "postgres", ssl: { rejectUnauthorized: false } });
   await c.connect();
   return { client: c, ref: r, q: async (sql, params) => (await c.query(sql, params)).rows };

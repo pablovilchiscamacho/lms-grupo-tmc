@@ -130,3 +130,6 @@ Probado: el respaldo real de producción (47 tablas) se restauró en una base va
 2. `npm run bootstrap:admin -- --email … --nombre … --apellido … --empresa "Grupo TMC" --temporal` crea al Super Admin real (la contraseña temporal se guardó en un archivo del Escritorio, no en el chat).
 3. Primer acceso: cambiar la contraseña → **Administración** → configurar la verificación en dos pasos (Google o Microsoft Authenticator).
 
+## Mudanza a Estados Unidos (2026-10-08)
+La base pasó de **ca-central-1 (Montreal)** al proyecto **`lms-grupo-tmc-usa`** en **us-east-1 (Virginia)**, junto a las funciones de Vercel (`iad1`): cada consulta baja de ~15 ms a ~1 ms. Procedimiento: proyecto nuevo → `npm run db:migrate` → `npm run db:backup` del viejo → `npm run db:restore` en el nuevo (incluye cuentas y su MFA) → apagar el registro abierto, Site URL y Redirect URLs, límite de archivo de 1 GB → variables de Vercel (las `NEXT_PUBLIC_` como *Config*) → publicar. Pooler nuevo: `aws-0-us-east-1.pooler.supabase.com`.
+
