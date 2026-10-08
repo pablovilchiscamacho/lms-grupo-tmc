@@ -8,7 +8,7 @@ export const STEPS = [
   { key: "examen", label: "Examen" },
   { key: "publicar", label: "Publicar y asignar" },
 ] as const;
-export type StepKey = (typeof STEPS)[number]["key"] | "participantes";
+export type StepKey = (typeof STEPS)[number]["key"] | "participantes" | "historial";
 
 /** Asistente de 4 pasos (§11.3). Sin curso aún, solo el paso 1 está activo. */
 export function Stepper({ current, courseId, done = [] }: { current: StepKey; courseId?: string; done?: string[] }) {

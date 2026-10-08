@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, MoreHorizontal } from "lucide-react";
+import { FileSearch, Loader2, MoreHorizontal } from "lucide-react";
 import { Alert, Badge, EmptyState, Field } from "@/components/ui";
 import { Modal } from "@/components/ui/client";
 import { adjustEnrollment } from "../actions";
@@ -38,6 +38,7 @@ export function EnrollmentTable({ rows, exams, canAdjust, revalidate, show }: {
             <tr>
               {show.user && <th className="th">Persona</th>}{show.course && <th className="th">Curso</th>}
               <th className="th">Asignado</th><th className="th">Fecha límite</th><th className="th">Avance</th><th className="th">Calificación</th><th className="th">Estado</th>
+              <th className="th w-10"><span className="sr-only">Trazabilidad</span></th>
               {canAdjust && <th className="th w-10" />}
             </tr>
           </thead>
@@ -52,6 +53,7 @@ export function EnrollmentTable({ rows, exams, canAdjust, revalidate, show }: {
                 <td className="td"><div className="flex items-center gap-2"><div className="h-1.5 w-20 overflow-hidden rounded-full bg-slate-100"><div className="h-full bg-brand-600" style={{ width: `${e.progress_pct}%` }} /></div><span className="text-xs tabular-nums text-slate-600">{Math.round(Number(e.progress_pct))}%</span></div></td>
                 <td className="td tabular-nums">{e.final_score != null ? `${Number(e.final_score)}%` : "—"}</td>
                 <td className="td">{statusBadge(e)}{e.cancel_reason && <div className="text-xs text-slate-500">{e.cancel_reason}</div>}</td>
+                <td className="td"><Link href={`/admin/trazabilidad/${e.id}`} className="inline-flex rounded p-1.5 text-slate-500 hover:bg-slate-100" title="Trazabilidad (ISO)" aria-label="Ver trazabilidad"><FileSearch className="size-4" /></Link></td>
                 {canAdjust && <td className="td">{e.state === "active" && <button className="rounded p-1.5 text-slate-500 hover:bg-slate-100" onClick={() => setTarget(e)} aria-label="Acciones"><MoreHorizontal className="size-4" /></button>}</td>}
               </tr>
             ))}

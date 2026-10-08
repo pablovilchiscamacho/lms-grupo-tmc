@@ -1,4 +1,5 @@
 import "server-only";
+import { pdfSafe } from "@/lib/pdf-text";
 import { PDFDocument, rgb, StandardFonts, type PDFFont, type PDFPage } from "pdf-lib";
 import { fmtDate, fmtDateTime } from "@/lib/format";
 import { CERT_STATUS, REQUIREMENT, USER_STATUS } from "./catalog";
@@ -17,9 +18,7 @@ const MUTED = rgb(0.39, 0.45, 0.53);
 const INK = rgb(0.1, 0.12, 0.18);
 const STRIPE = rgb(0.96, 0.97, 0.98);
 
-const safe = (f: PDFFont, s: string) => {
-  try { f.encodeText(s); return s; } catch { return [...s].map((ch) => { try { f.encodeText(ch); return ch; } catch { return ch.normalize("NFD").replace(/[̀-ͯ]/g, "") || "?"; } }).join(""); }
-};
+const safe = pdfSafe;
 const clip = (f: PDFFont, s: string, size: number, w: number) => {
   let t = safe(f, s);
   if (f.widthOfTextAtSize(t, size) <= w) return t;

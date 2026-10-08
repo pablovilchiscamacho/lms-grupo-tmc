@@ -1,4 +1,5 @@
 import "server-only";
+import { pdfSafe } from "@/lib/pdf-text";
 import { PDFDocument, rgb, StandardFonts, type PDFFont, type PDFPage } from "pdf-lib";
 import QRCode from "qrcode";
 import { fmtDate } from "@/lib/format";
@@ -108,12 +109,7 @@ function drawQr(page: PDFPage, value: string, x: number, y: number, size: number
   }
 }
 
-/** Las fuentes estándar solo traen WinAnsi: lo que no se puede codificar pierde el acento en lugar de romper el PDF. */
-function safe(font: PDFFont, s: string) {
-  try { font.encodeText(s); return s; } catch {
-    return [...s].map((ch) => { try { font.encodeText(ch); return ch; } catch { return ch.normalize("NFD").replace(/[̀-ͯ]/g, "") || "?"; } }).join("");
-  }
-}
+const safe = pdfSafe;
 
 function text(page: PDFPage, s: string, font: PDFFont, size: number, x: number, y: number,
   o: { align?: "left" | "center" | "right"; color?: ReturnType<typeof rgb>; spacing?: number } = {}) {

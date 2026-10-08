@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Users } from "lucide-react";
+import { ArrowLeft, History, Users } from "lucide-react";
 import { requirePermission, can } from "@/lib/auth/session";
 import { getCourse, getVersionTree } from "@/features/courses/queries";
 import { enrollmentsFor, examsByVersion } from "@/features/assignments/queries";
@@ -17,6 +17,8 @@ import { getExams, listQuestionCategories } from "@/features/exams/queries";
 import { ExamBuilder } from "@/features/exams/ui/exam-builder";
 import { COURSE_STATUS, fmtDate } from "@/lib/format";
 import { Badge, Card, EmptyState } from "@/components/ui";
+import { AuditList } from "@/components/audit-list";
+import { courseHistory, courseVersionsTrace } from "@/features/traceability/queries";
 
 export const metadata: Metadata = { title: "Curso" };
 
@@ -26,7 +28,7 @@ export default async function CoursePage({ params, searchParams }: PageProps<"/a
   const sp = await searchParams;
   const course = await getCourse(id);
   if (!course) notFound();
-  const step = (["datos", "contenido", "examen", "publicar", "participantes"].includes(String(sp.paso)) ? sp.paso : "contenido") as StepKey;
+  const step = (["datos", "contenido", "examen", "publicar", "participantes", "historial"].includes(String(sp.paso)) ? sp.paso : "contenido") as StepKey;
 
   const open = course.versions.find((v) => v.status === "draft" || v.status === "review") ?? null;
   const published = course.versions.find((v) => v.status === "published") ?? null;
@@ -60,6 +62,7 @@ export default async function CoursePage({ params, searchParams }: PageProps<"/a
         <div className="flex items-center gap-2">
           <Badge tone={tone}>{label}</Badge>
           <Link href={`?paso=participantes`} className="btn-secondary"><Users className="size-4" /> Participantes</Link>
+          <Link href={`?paso=historial`} className="btn-secondary"><History className="size-4" /> Historial</Link>
         </div>
       </div>
 
@@ -93,6 +96,8 @@ export default async function CoursePage({ params, searchParams }: PageProps<"/a
         />
       )}
 
+      {step === "historial" && <CourseHistory courseId={course.id} />}
+
       {step === "participantes" && (
         participants.length === 0 ? <EmptyState icon={<Users className="size-8" />} title="Nadie tiene asignado este curso todavía">Asígnalo desde el paso «Publicar y asignar».</EmptyState> : (
           <div className="card"><EnrollmentTable rows={participants} exams={await examsByVersion(participants.map((p) => p.course_version_id ?? ""))}
@@ -102,3 +107,46 @@ export default async function CoursePage({ params, searchParams }: PageProps<"/a
     </>
   );
 }
+
+const VSTATUS: Record<string, [string, "green" | "amber" | "slate" | "blue"]> = {
+  published: ["Vigente", "green"], draft: ["En edición", "amber"], review: ["En revisión", "blue"], retired: ["Reemplazada", "slate"], archived: ["Archivada", "slate"],
+};
+
+/** Trazabilidad del curso (ISO §59): quién lo creó, cada versión con quién la publicó y qué cambió, y todos los cambios. */
+async function CourseHistory({ courseId }: { courseId: string }) {
+  const [t, log] = await Promise.all([courseVersionsTrace(courseId), courseHistory(courseId).catch(() => null)]);
+  return (
+    <div className="space-y-6">
+      <Card title="Versiones">
+        <p className="mb-3 text-sm text-slate-600">Creado por <strong>{t.course.created_by ?? "—"}</strong> el {fmtDate(t.course.created_at)}. Cada persona conserva la versión que tomó, aunque después se publique otra.</p>
+        <div className="-mx-4 overflow-x-auto">
+          <table className="w-full min-w-[760px]">
+            <thead className="border-y border-slate-200 bg-slate-50">
+              <tr><th className="th">Versión</th><th className="th">Estado</th><th className="th">Qué cambió</th><th className="th">Publicada</th><th className="th text-right">La tomaron</th><th className="th text-right">Terminaron</th></tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {t.versions.map((v) => {
+                const [l, tone] = VSTATUS[v.status] ?? [v.status, "slate"];
+                return (
+                  <tr key={v.id}>
+                    <td className="td font-medium text-slate-900">v{v.number}</td>
+                    <td className="td"><Badge tone={tone}>{l}</Badge>{v.requires_retraining && <div className="mt-0.5 text-xs text-amber-700">Pidió recapacitación</div>}</td>
+                    <td className="td text-sm text-slate-700">{v.change_summary ?? <span className="text-slate-400">—</span>}</td>
+                    <td className="td text-sm text-slate-600">{v.published_at ? <>{fmtDate(v.published_at)}<div className="text-xs text-slate-500">por {v.published_by ?? "—"}</div></> : "—"}</td>
+                    <td className="td text-right tabular-nums">{v.took}</td>
+                    <td className="td text-right tabular-nums">{v.passed}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+      <Card title="Todos los cambios">
+        {log === null ? <p className="text-sm text-slate-500">No tienes permiso para ver la bitácora de este curso.</p>
+          : log.length === 0 ? <EmptyState title="Sin cambios registrados" /> : <AuditList entries={log} />}
+      </Card>
+    </div>
+  );
+}
+

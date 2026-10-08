@@ -202,3 +202,15 @@ La clave de Resend se guarda cifrada en Supabase Vault (`resend_api_key`) con `n
 
 Avisos nuevos: `review_pending` (a los instructores del curso o, si no hay, a quien califica en todo el grupo) y `team_overdue` (lunes, a cada jefe con `progress.read` con su línea de reporte atrasada). Los recordatorios de fecha límite ahora se configuran (`settings.reminders`: días antes, aviso al vencer y repetición).
 
+## Fase 9: trazabilidad ISO (§59)
+
+| Pantalla / ruta | RPC | Responde |
+|---|---|---|
+| `/admin/trazabilidad/[enrollmentId]` (ícono en cada curso de una persona y en los participantes) | `enrollment_trace` | Las 10 preguntas del auditor: quién creó y modificó el curso, qué versión tomó, quién lo asignó, qué examen presentó, qué respondió (tal como lo vio), quién calificó, qué calificación, cuándo aprobó y qué constancia. Las respuestas correctas solo para quien califica o audita (`grading.grade` / `audit.read`) |
+| `GET /api/trazabilidad/[enrollmentId]` | `enrollment_trace` + `verify_audit_chain` | La misma evidencia en PDF, con el estado de la bitácora; la descarga queda registrada |
+| `/admin/cursos/[id]?paso=historial` | `course_versions_trace`, `course_history` | Versiones (quién creó y publicó, qué cambió, cuántos la tomaron y terminaron) y todos los cambios del curso y sus piezas |
+| `/admin/auditoria?verificar=1` | `verify_audit_chain` | Recorre la cadena de hash y dice si algún registro fue alterado o borrado (y cuál) |
+| Mi perfil → Historial | `my_history` | Historial del empleado con la versión de cada curso («v1 — Aprobado») y sus ciclos anteriores |
+
+`src/lib/pdf-text.ts` (`pdfSafe`) es el único lugar que adapta el texto a las fuentes estándar de PDF (flechas, emojis).
+

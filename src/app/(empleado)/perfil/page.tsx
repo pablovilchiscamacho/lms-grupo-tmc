@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { FileDown, KeyRound, ShieldCheck } from "lucide-react";
+import { Download, FileDown, KeyRound, ShieldCheck } from "lucide-react";
 import { requireUser } from "@/lib/auth/session";
 import { fmtDate, fmtDateTime, SCOPE_LABEL } from "@/lib/format";
 import { Avatar, Badge, Card, EmptyState, PageHeader, Stat } from "@/components/ui";
 import { PhoneForm } from "./phone-form";
+import { myHistory, type HistoryRow } from "@/features/traceability/queries";
 
 export const metadata: Metadata = { title: "Mi perfil" };
 
@@ -12,6 +13,10 @@ export default async function ProfilePage() {
   const ctx = await requireUser();
   const p = ctx.profile;
   const tz = p.company.timezone;
+  const history = await myHistory();
+  const current = history.filter((h) => h.state === "active");
+  const done = current.filter((h) => h.progress_status === "completed").length;
+  const overdue = current.filter((h) => h.progress_status !== "completed" && h.result !== "failed" && h.due_at && new Date(h.due_at) < new Date()).length;
   const rows: [string, React.ReactNode][] = [
     ["Número de empleado", p.employee_number ?? "—"],
     ["Usuario", p.username ?? "—"],
@@ -50,14 +55,38 @@ export default async function ProfilePage() {
           </Card>
 
           <section aria-label="Resumen" className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <Stat label="Asignados" value={0} />
-            <Stat label="Aprobados" value={0} tone="green" />
-            <Stat label="Vencidos" value={0} />
-            <Stat label="Cumplimiento" value="—" />
+            <Stat label="Asignados" value={current.length} />
+            <Stat label="Completados" value={done} tone="green" />
+            <Stat label="Vencidos" value={overdue} tone={overdue ? "red" : undefined} />
+            <Stat label="Cumplimiento" value={current.length ? `${Math.round((done / current.length) * 100)}%` : "—"} />
           </section>
 
           <Card title="Historial de capacitación">
-            <EmptyState title="Sin cursos todavía">Aquí verás cada curso con su fecha de asignación, intentos, calificación y estado.</EmptyState>
+            {history.length === 0 ? (
+              <EmptyState title="Sin cursos todavía">Aquí verás cada curso con su fecha de asignación, intentos, calificación y estado.</EmptyState>
+            ) : (
+              <div className="-m-4 overflow-x-auto">
+                <table className="w-full min-w-[760px]">
+                  <thead className="border-b border-slate-200 bg-slate-50">
+                    <tr><th className="th">Curso</th><th className="th">Asignado</th><th className="th">Fecha límite</th><th className="th">Inicio</th><th className="th">Finalización</th><th className="th text-right">Intentos</th><th className="th text-right">Calificación</th><th className="th">Estado</th></tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {history.map((h) => (
+                      <tr key={h.id} className={h.state !== "active" ? "text-slate-500" : undefined}>
+                        <td className="td"><span className="font-medium text-slate-900">{h.course}</span><div className="text-xs text-slate-500">{h.version ? `v${h.version}` : ""}{h.cycle > 1 ? ` · ciclo ${h.cycle}` : ""}{h.state === "superseded" ? " · ciclo anterior" : ""}</div></td>
+                        <td className="td text-sm">{fmtDate(h.assigned_at, tz)}</td>
+                        <td className="td text-sm">{h.due_at ? fmtDate(h.due_at, tz) : "—"}</td>
+                        <td className="td text-sm">{h.started_at ? fmtDate(h.started_at, tz) : "—"}</td>
+                        <td className="td text-sm">{h.finished_at ? fmtDate(h.finished_at, tz) : "—"}</td>
+                        <td className="td text-right tabular-nums">{h.attempts || "—"}</td>
+                        <td className="td text-right tabular-nums">{h.final_score != null ? `${Number(h.final_score)}%` : "—"}</td>
+                        <td className="td"><HistoryBadge h={h} />{h.certificate_id && <a href={`/api/certificates/${h.certificate_id}/pdf`} className="mt-1 flex items-center gap-1 text-xs font-medium text-brand-700 hover:underline"><Download className="size-3" /> Constancia</a>}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </Card>
         </div>
 
@@ -90,3 +119,15 @@ export default async function ProfilePage() {
     </>
   );
 }
+
+/** Estados del historial (§6): Pendiente, En progreso, Completado, Aprobado, Reprobado y Vencido. */
+function HistoryBadge({ h }: { h: HistoryRow }) {
+  if (h.result === "passed") return <Badge tone="green">Aprobado</Badge>;
+  if (h.result === "failed") return <Badge tone="red">Reprobado</Badge>;
+  if (h.result === "pending_review") return <Badge tone="amber">En revisión</Badge>;
+  if (h.progress_status === "completed") return <Badge tone="green">Completado</Badge>;
+  if (h.state === "active" && h.due_at && new Date(h.due_at) < new Date()) return <Badge tone="red">Vencido</Badge>;
+  if (h.progress_status === "in_progress") return <Badge tone="blue">En progreso</Badge>;
+  return <Badge>Pendiente</Badge>;
+}
+

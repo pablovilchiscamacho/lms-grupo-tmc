@@ -90,3 +90,8 @@ Reglas de seguridad: nadie puede cambiarse su propio rol o estado; solo un Super
 
 ## Auditoría (Control → Auditoría)
 Registro de solo lectura de accesos, altas, cambios, roles y estados, con autor, fecha, IP y valores anteriores y nuevos. Nadie, ni el Super Admin, puede editarlo o borrarlo.
+- **Verificar integridad**: comprueba que ningún registro fue alterado ni borrado. Úsalo antes de una auditoría.
+
+## Trazabilidad para auditorías ISO
+- **De una persona en un curso**: en la ficha de la persona (o en Participantes del curso), pulsa el ícono 🔍 del curso. Verás las respuestas a las preguntas del auditor: quién creó el curso, qué versión tomó, qué respondió en el examen, quién calificó, cuándo aprobó y qué constancia obtuvo. **Evidencia PDF** lo descarga para entregarlo.
+- **De un curso**: en el curso, botón **Historial**: cada versión con quién la publicó, qué cambió y cuántas personas la tomaron, más todos los cambios.

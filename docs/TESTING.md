@@ -19,7 +19,7 @@ Las pruebas de base de datos no necesitan Docker ni internet: cada archivo crea 
 - `pg_cron` no existe en PGlite: la migración de jobs se salta y las funciones (`audit.seal()`) se prueban llamándolas directamente.
 - PGlite es Postgres 18 y Supabase usa 15 o 17, así que las migraciones evitan la sintaxis exclusiva de versiones nuevas.
 
-## Cobertura actual: 136 pruebas (Fase 1: 39 · Fase 2: 23 · Fase 3: 19 + 2 del importador · Fase 4: 13 · Fase 5: 13 · Fase 6: 7 · Fase 7: 9 + 2 de fechas · Fase 8: 9) + prueba de carga
+## Cobertura actual: 142 pruebas (Fase 1: 39 · Fase 2: 23 · Fase 3: 19 + 2 del importador · Fase 4: 13 · Fase 5: 13 · Fase 6: 7 · Fase 7: 9 + 2 de fechas · Fase 8: 9 · Fase 9: 5 + 1 de PDF) + prueba de carga
 
 | Área (§65) | Pruebas |
 |---|---|
@@ -132,6 +132,18 @@ El *shim* simula Vault (`vault.decrypted_secrets`) y `pg_net` (`net.http_post` g
 | **Envío** | Sin clave no manda; con clave manda un lote a Resend con la clave en el encabezado; respuesta 200 → enviados con su id; 422/500 → reintento individual con espera y, tras 4 intentos, fallido |
 | **Avisos nuevos** | Examen en revisión avisa a quien califica; recordatorios configurables; resumen del jefe una sola vez por semana y solo a quien tiene permiso de seguimiento |
 | **Permisos** | Empleado y RH no ven ni cambian la configuración ni mandan pruebas; el estado nunca expone la clave |
+
+### Fase 9 (`tests/db/phase9.test.ts`)
+
+| Área | Pruebas |
+|---|---|
+| **§59 completo** | Con un examen real (verdadero/falso + abierta calificada a mano), una sola consulta responde quién creó, versión, quién asignó, qué respondió, quién calificó, calificación final (95 %), aprobación y constancia |
+| **Alcance** | El jefe ve la trazabilidad de su equipo **sin** respuestas correctas; el empleado y RH de otra empresa no |
+| **Historial del curso** | Versiones con quién publicó, qué cambió y cuántos la tomaron; la bitácora incluye curso, versiones, lecciones, examen, preguntas y asignaciones |
+| **Versionado (§31)** | Al publicar v2, el historial de Juan sigue diciendo «v1 — Aprobado» |
+| **Integridad** | La cadena se verifica; si alguien altera un registro directamente en la base, la verificación señala exactamente cuál |
+
+Se probó en vivo contra Supabase: la cadena de producción (212 registros) está íntegra; trazabilidad de Ana con sus 6 respuestas, la abierta calificada por Sofía, y el PDF de evidencia revisado visualmente.
 
 ## Regla para las fases siguientes
 Cada tabla nueva llega con sus pruebas de RLS: qué **puede** y qué **no puede** hacer cada rol, siempre con usuarios de dos empresas distintas. Cada RPC llega con su prueba de permiso negado.
