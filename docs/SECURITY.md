@@ -216,3 +216,12 @@ Todas las tablas de `public` tienen `ENABLE ROW LEVEL SECURITY` y una prueba aut
 - Volcado lógico **semanal** (`pg_dump`) a un almacenamiento externo vía GitHub Actions, cifrado y con retención de 12 meses, como evidencia ISO.
 - Prueba de restauración trimestral documentada.
 - Los archivos de Storage se respaldan con un job mensual de sincronización a almacenamiento externo (1.1).
+
+## 12. Endurecimiento (Fase 10)
+
+- **Funciones de la API:** Postgres otorga `EXECUTE` a `PUBLIC` por omisión. La migración 0020 lo quita en todas las funciones de `public` (sin sesión solo existe `verify_certificate`) y cambia los privilegios por omisión del rol de migraciones, así que **toda función nueva nace cerrada**: cada migración debe otorgar `EXECUTE` a `authenticated` en sus RPC y en las funciones de `app` que se usen directamente en políticas RLS (las que se llaman desde otra función `security definer` no lo necesitan).
+- `pg_net` solo lo usa la base (el envío de correo corre como dueño); se quitó a `anon` y `authenticated`.
+- **Invariantes automáticos** (`tests/db/phase10.test.ts`): todas las tablas con RLS; `anon` sin acceso a tablas; solo `verify_certificate` para `anon`; funciones internas cerradas; toda `security definer` con `search_path`; bitácora y tablas académicas sin escritura directa.
+- **Encabezados**: CSP, HSTS con *preload*, `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy` y `Permissions-Policy` (verificados en producción). `script-src` usa `'unsafe-inline'` por Next.js; pasar a *nonces* queda para la 1.1.
+- **Dependencias**: `npm audit --omit=dev` sin vulnerabilidades (se fijó `uuid@11` para `exceljs`). La alerta de `braces` es solo de herramientas de desarrollo y no llega al sitio.
+

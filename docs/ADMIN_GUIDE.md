@@ -75,6 +75,10 @@ Cada descarga queda registrada en la bitácora. En la ficha de cada persona, **E
 - **Mandar un correo de prueba** para comprobar que llegan (revisa también spam).
 - **Últimos correos**: a quién se mandó cada aviso y si llegó o falló.
 
+## Configuración (Control → Configuración, solo Super Admin)
+- **Salud del sistema**: un aviso verde «Todo funciona correctamente» o la lista de lo que hay que revisar (tareas automáticas que fallaron, correos con error, exámenes atorados).
+- Accesos directos a Organización, Notificaciones, firma de constancias, Espacio usado e integridad de la bitácora.
+
 ## Roles disponibles
 
 | Rol | Para quién | Puede |

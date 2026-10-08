@@ -86,10 +86,10 @@ async function PeopleView({ f, sp, sort, page }: { f: ReturnType<typeof parseFil
     <section aria-label="Personas" className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm text-slate-600">{total.toLocaleString("es-MX")} persona{total === 1 ? "" : "s"}</p>
-        <form className="flex items-center gap-2" action="/admin/cumplimiento">
+        <form className="flex min-w-0 flex-wrap items-center gap-2" action="/admin/cumplimiento">
           {Object.entries(sp).map(([k, v]) => typeof v === "string" && v && !["orden", "pagina"].includes(k) && <input key={k} type="hidden" name={k} value={v} />)}
           <label htmlFor="orden" className="text-xs text-slate-500">Ordenar</label>
-          <select id="orden" name="orden" defaultValue={sort} className="input w-auto py-1.5 text-sm">
+          <select id="orden" name="orden" defaultValue={sort} className="input w-auto max-w-full min-w-0 flex-1 py-1.5 text-sm sm:flex-none">
             {SORTS.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
           </select>
           <button className="btn-secondary py-1.5">Ordenar</button>

@@ -26,7 +26,7 @@ export function AuditList({ entries, tz }: { entries: AuditEntry[]; tz?: string 
                 {keys.slice(0, 12).map((k) => (
                   <div key={k} className="flex flex-wrap gap-1">
                     <dt className="font-medium text-slate-600">{FIELD_LABEL[k] ?? k}:</dt>
-                    <dd className="text-slate-500"><span className="line-through">{show(e.old_data?.[k])}</span> → <span className="text-slate-800">{show(e.new_data?.[k])}</span></dd>
+                    <dd className="min-w-0 break-all text-slate-500"><span className="line-through">{show(e.old_data?.[k])}</span> → <span className="text-slate-800">{show(e.new_data?.[k])}</span></dd>
                   </div>
                 ))}
               </dl>

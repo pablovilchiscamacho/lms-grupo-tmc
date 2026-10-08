@@ -18,7 +18,7 @@ export function Compliance({ value, size = "sm" }: { value: number | null | unde
   const l = lightOf(value);
   if (!l) return <span className="text-slate-400">—</span>;
   return (
-    <span className={clsx("inline-flex items-center gap-1.5 font-medium tabular-nums", LIGHT[l].text, size === "lg" && "text-2xl font-semibold")}>
+    <span className={clsx("relative inline-flex items-center gap-1.5 font-medium tabular-nums", LIGHT[l].text, size === "lg" && "text-2xl font-semibold")}>
       <span className={clsx("inline-block rounded-full", LIGHT[l].dot, size === "lg" ? "size-3" : "size-2")} aria-hidden />
       {pctText(value)}
       <span className="sr-only"> ({LIGHT[l].label})</span>

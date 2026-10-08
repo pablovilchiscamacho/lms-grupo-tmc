@@ -49,3 +49,7 @@ supabase/.branches/
 
 # generado por scripts/copy-pdf-worker.mjs
 public/pdf.worker.min.mjs
+
+# Respaldos (nunca al repositorio)
+*.lmsbk
+respaldo/

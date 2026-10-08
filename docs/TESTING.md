@@ -19,7 +19,7 @@ Las pruebas de base de datos no necesitan Docker ni internet: cada archivo crea 
 - `pg_cron` no existe en PGlite: la migración de jobs se salta y las funciones (`audit.seal()`) se prueban llamándolas directamente.
 - PGlite es Postgres 18 y Supabase usa 15 o 17, así que las migraciones evitan la sintaxis exclusiva de versiones nuevas.
 
-## Cobertura actual: 142 pruebas (Fase 1: 39 · Fase 2: 23 · Fase 3: 19 + 2 del importador · Fase 4: 13 · Fase 5: 13 · Fase 6: 7 · Fase 7: 9 + 2 de fechas · Fase 8: 9 · Fase 9: 5 + 1 de PDF) + prueba de carga
+## Cobertura actual: 154 pruebas (Fase 1: 39 · Fase 2: 23 · Fase 3: 19 + 2 del importador · Fase 4: 13 · Fase 5: 13 · Fase 6: 7 · Fase 7: 9 + 2 de fechas · Fase 8: 9 · Fase 9: 5 + 1 de PDF · Fase 10: 9 + 3 de respaldo) + prueba de carga
 
 | Área (§65) | Pruebas |
 |---|---|
@@ -145,5 +145,10 @@ El *shim* simula Vault (`vault.decrypted_secrets`) y `pg_net` (`net.http_post` g
 
 Se probó en vivo contra Supabase: la cadena de producción (212 registros) está íntegra; trazabilidad de Ana con sus 6 respuestas, la abierta calificada por Sofía, y el PDF de evidencia revisado visualmente.
 
+### Fase 10
+- `tests/db/phase10.test.ts`: **invariantes de seguridad de toda la base** (fallan si una migración futura deja una tabla sin RLS o una función abierta) y salud del sistema solo para el Super Admin.
+- `tests/db/backup.test.ts`: respaldo → cifrado → restauración en una base vacía → mismas filas, accesos, constancias, folios que continúan y bitácora íntegra.
+- Revisión en celular (375 px) de 17 pantallas: se corrigieron 2 desbordes (Cumplimiento y Auditoría).
+
 ## Regla para las fases siguientes
-Cada tabla nueva llega con sus pruebas de RLS: qué **puede** y qué **no puede** hacer cada rol, siempre con usuarios de dos empresas distintas. Cada RPC llega con su prueba de permiso negado.
+Cada tabla nueva llega con sus pruebas de RLS (y las invariantes de `phase10.test.ts` deben seguir en verde): qué **puede** y qué **no puede** hacer cada rol, siempre con usuarios de dos empresas distintas. Cada RPC llega con su prueba de permiso negado.

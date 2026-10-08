@@ -107,3 +107,21 @@ Una vez enlazado el proyecto: `npm run db:types` genera `src/types/database.ts`.
 3. En la plataforma: **Notificaciones** → remitente con el dominio verificado → encender el correo → mandar una prueba.
 4. Recuperación de contraseña (la manda Supabase Auth): Supabase → Authentication → Emails → **SMTP Settings** → host `smtp.resend.com`, puerto `465`, usuario `resend`, contraseña = la clave de Resend, remitente con el dominio verificado. Sin esto, Supabase solo envía unos pocos correos por hora y únicamente a los miembros del equipo del proyecto.
 
+## Respaldos
+1. **Supabase Pro**: respaldo diario automático con 7 días de retención (Dashboard → Database → Backups).
+2. **Respaldo propio cifrado** (`npm run db:backup`): exporta los datos de `public`, `app`, `audit`, `auth.users` y `auth.identities` en una foto consistente, los comprime y los cifra con AES-256-GCM usando `BACKUP_PASSPHRASE`. Por omisión lo guarda en `~/Respaldos-LMS/`. **Sin la frase no se puede abrir**: guárdala en un gestor de contraseñas.
+3. **Semanal automático** (`ops/backup-workflow.yml`, se activa copiándolo a `.github/workflows/backup.yml` desde GitHub): domingos 03:00 (CDMX), artefacto privado de GitHub por 90 días. Requiere los secretos del repositorio `SUPABASE_DB_PASSWORD` y `BACKUP_PASSPHRASE`; sin ellos el trabajo solo deja un aviso.
+4. **Los archivos de Storage** (presentaciones, videos, PDF de constancias) no van en estos respaldos: Supabase los guarda con redundancia y las constancias se pueden regenerar.
+
+### Restaurar
+1. Proyecto nuevo de Supabase → aplicar las migraciones (`npm run db:migrate` con las variables del proyecto nuevo).
+2. `npm run db:restore -- <archivo.lmsbk> --ref <ref-nuevo> --host <pooler-nuevo> --password-env <VAR_CON_SU_CONTRASEÑA> --yes`
+3. El comando borra los datos del destino, inserta todo en orden de dependencias, ajusta las secuencias, compara los conteos con el respaldo y verifica la cadena de la bitácora. Restaurar sobre producción exige además `--confirmar-produccion <ref>`.
+
+Probado: el respaldo real de producción (47 tablas) se restauró en una base vacía sin diferencias y con la bitácora íntegra (`tests/db/backup.test.ts` prueba lo mismo en cada corrida).
+
+## Monitoreo
+- **Configuración → Salud del sistema** (Super Admin): estado de cada tarea automática, bitácora sin sellar, correos en cola o fallidos, exámenes abiertos o atorados, accesos fallidos y tamaño de la base.
+- `GET /api/health`: versión publicada y dominio de verificación (para un monitor externo de disponibilidad).
+- Errores del servidor: Vercel → Logs (cada error trae un código que el usuario ve en pantalla).
+
