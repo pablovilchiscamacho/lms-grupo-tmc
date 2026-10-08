@@ -12,7 +12,7 @@ export default async function VerifyForm({ searchParams }: PageProps<"/verify/ce
   if (code) redirect(`/verify/certificate/${code}`);
   return (
     <main className="flex min-h-screen flex-col items-center bg-slate-50 px-4 py-10">
-      <BrandMark className="mb-8 text-brand-900" />
+      <BrandMark size="lg" className="mb-8 text-brand-900" />
       <form className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <BadgeCheck className="size-8 text-brand-600" aria-hidden />
         <h1 className="mt-3 text-lg font-semibold text-slate-900">Verificar una constancia</h1>

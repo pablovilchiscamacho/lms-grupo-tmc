@@ -1,5 +1,6 @@
 import "server-only";
 import { pdfSafe } from "@/lib/pdf-text";
+import { LOGO_PNG_BASE64, LOGO_RATIO } from "@/lib/brand-logo";
 import { PDFDocument, rgb, StandardFonts, type PDFFont, type PDFPage } from "pdf-lib";
 import { fmtDate, fmtDateTime, fmtDuration } from "@/lib/format";
 import { RESULT } from "@/features/reports/catalog";
@@ -55,11 +56,12 @@ export async function renderTracePdf(t: EnrollmentTrace, generatedBy: string, tz
   };
 
   const e = t.enrollment;
+  const logo = await pdf.embedPng(Buffer.from(LOGO_PNG_BASE64, "base64"));
   newPage();
-  page.drawRectangle({ x: M, y: y - 34, width: 34, height: 34, color: NAVY });
-  page.drawText("TMC", { x: M + 6, y: y - 21, size: 10, font: bold, color: rgb(1, 1, 1) });
-  page.drawText(safe(bold, "Evidencia de trazabilidad de capacitación"), { x: M + 46, y: y - 14, size: 15, font: bold, color: NAVY });
-  page.drawText(safe(reg, `Grupo TMC · generado por ${generatedBy} el ${fmtDateTime(new Date(), tz)}`), { x: M + 46, y: y - 28, size: 8, font: reg, color: MUTED });
+  page.drawImage(logo, { x: M, y: y - 32, width: 32 * LOGO_RATIO, height: 32 });
+  const tx = M + 32 * LOGO_RATIO + 14;
+  page.drawText(safe(bold, "Evidencia de trazabilidad de capacitación"), { x: tx, y: y - 14, size: 15, font: bold, color: NAVY });
+  page.drawText(safe(reg, `Generado por ${generatedBy} el ${fmtDateTime(new Date(), tz)}`), { x: tx, y: y - 28, size: 8, font: reg, color: MUTED });
   y -= 50;
   para(`${t.person.full_name}${t.person.employee_number ? ` · núm. ${t.person.employee_number}` : ""} · ${[t.person.position, t.person.department, t.person.company].filter(Boolean).join(" · ")}`, { font: bold, size: 10 });
   para(`${t.course.title} (${t.course.code})${e.cycle > 1 ? ` · ciclo ${e.cycle}` : ""}`, { size: 10 });

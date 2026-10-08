@@ -1,5 +1,6 @@
 import "server-only";
 import { pdfSafe } from "@/lib/pdf-text";
+import { LOGO_PNG_BASE64, LOGO_RATIO } from "@/lib/brand-logo";
 import ExcelJS from "exceljs";
 import { PDFDocument, rgb, StandardFonts, type PDFFont, type PDFPage } from "pdf-lib";
 import { fmtDateTime } from "@/lib/format";
@@ -99,6 +100,7 @@ export async function toPdf(rows: Row[], cols: Column[], m: ExportMeta) {
   if (sum > avail) widths = widths.map((w) => (w * avail) / sum);
   const right = (c: Column) => ["int", "num", "pct", "hours"].includes(c.type);
   const shown = rows.slice(0, PDF_MAX_ROWS);
+  const logo = await pdf.embedPng(Buffer.from(LOGO_PNG_BASE64, "base64"));
   const pages: PDFPage[] = [];
 
   let page!: PDFPage, y = 0;
@@ -107,7 +109,7 @@ export async function toPdf(rows: Row[], cols: Column[], m: ExportMeta) {
     y = H - M;
     if (pages.length === 1) {
       page.drawText(safeText(bold, `Reporte de ${m.def.title}`), { x: M, y: y - 14, size: 15, font: bold, color: NAVY });
-      page.drawText(safeText(reg, "Grupo TMC · Capacitación"), { x: W - M - reg.widthOfTextAtSize("Grupo TMC · Capacitación", 9), y: y - 12, size: 9, font: reg, color: MUTED });
+      page.drawImage(logo, { x: W - M - 24 * LOGO_RATIO, y: y - 22, width: 24 * LOGO_RATIO, height: 24 });
       y -= 30;
       for (const line of [m.filters, `Generado por ${m.generatedBy} el ${fmtDateTime(new Date(), m.tz)} · ${m.total} fila${m.total === 1 ? "" : "s"}${shown.length < m.total ? ` (se muestran ${shown.length}; descarga Excel para verlas todas)` : ""}`]) {
         page.drawText(clip(reg, line, 8, W - 2 * M), { x: M, y, size: 8, font: reg, color: MUTED }); y -= 11;

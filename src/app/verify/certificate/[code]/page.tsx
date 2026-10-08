@@ -34,7 +34,7 @@ export default async function VerifyPage({ params }: PageProps<"/verify/certific
 
   return (
     <main className="flex min-h-screen flex-col items-center bg-slate-50 px-4 py-10">
-      <BrandMark className="mb-8 text-brand-900" />
+      <BrandMark size="lg" className="mb-8 text-brand-900" />
       <div className="w-full max-w-lg">
         {limited ? (
           <Panel icon={SearchX} title="Demasiadas consultas" text="Espera un minuto e inténtalo de nuevo." />

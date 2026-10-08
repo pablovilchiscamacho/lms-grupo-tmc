@@ -1,5 +1,6 @@
 import "server-only";
 import { pdfSafe } from "@/lib/pdf-text";
+import { LOGO_PNG_BASE64, LOGO_RATIO } from "@/lib/brand-logo";
 import { PDFDocument, rgb, StandardFonts, type PDFFont, type PDFPage } from "pdf-lib";
 import { fmtDate, fmtDateTime } from "@/lib/format";
 import { CERT_STATUS, REQUIREMENT, USER_STATUS } from "./catalog";
@@ -50,11 +51,12 @@ export async function renderTrainingRecord(r: TrainingRecord, generatedBy: strin
   const newPage = () => { page = pdf.addPage([W, H]); pages.push(page); y = H - M; };
   const txt = (s: string, x: number, yy: number, size: number, font = reg, color = INK) => page.drawText(safe(font, s), { x, y: yy, size, font, color });
 
+  const logo = await pdf.embedPng(Buffer.from(LOGO_PNG_BASE64, "base64"));
   newPage();
-  page.drawRectangle({ x: M, y: y - 34, width: 34, height: 34, color: NAVY });
-  txt("TMC", M + 6, y - 21, 10, bold, rgb(1, 1, 1));
-  txt("Expediente de capacitación", M + 46, y - 14, 16, bold, NAVY);
-  txt(`Grupo TMC · generado por ${generatedBy} el ${fmtDateTime(new Date(), tz)}`, M + 46, y - 28, 8, reg, MUTED);
+  page.drawImage(logo, { x: M, y: y - 32, width: 32 * LOGO_RATIO, height: 32 });
+  const tx = M + 32 * LOGO_RATIO + 14;
+  txt("Expediente de capacitación", tx, y - 14, 16, bold, NAVY);
+  txt(`Generado por ${generatedBy} el ${fmtDateTime(new Date(), tz)}`, tx, y - 28, 8, reg, MUTED);
   y -= 56;
 
   const p = r.person;

@@ -1,5 +1,6 @@
 import "server-only";
 import { pdfSafe } from "@/lib/pdf-text";
+import { LOGO_PNG_BASE64, LOGO_RATIO } from "@/lib/brand-logo";
 import { PDFDocument, rgb, StandardFonts, type PDFFont, type PDFPage } from "pdf-lib";
 import QRCode from "qrcode";
 import { fmtDate } from "@/lib/format";
@@ -40,10 +41,9 @@ export async function renderCertificate(c: CertificateData, verifyUrl: string): 
   page.drawRectangle({ x: 26, y: H - 34, width: W - 52, height: 8, color: NAVY });
 
   // Marca
-  page.drawRectangle({ x: 56, y: H - 104, width: 46, height: 46, color: NAVY });
-  text(page, "TMC", bold, 14, 79, H - 87, { color: rgb(1, 1, 1), align: "center" });
-  text(page, "Grupo TMC", bold, 15, 114, H - 76);
-  text(page, "Capacitación corporativa", regular, 9.5, 114, H - 91, { color: MUTED });
+  const logo = await pdf.embedPng(Buffer.from(LOGO_PNG_BASE64, "base64"));
+  page.drawImage(logo, { x: 56, y: H - 104, width: 46 * LOGO_RATIO, height: 46 });
+  text(page, "Capacitación corporativa", regular, 9.5, 56, H - 118, { color: MUTED });
   text(page, `Folio ${c.number}`, bold, 9.5, W - 56, H - 76, { align: "right", color: NAVY });
   text(page, c.company_name, regular, 9.5, W - 56, H - 91, { align: "right", color: MUTED });
 

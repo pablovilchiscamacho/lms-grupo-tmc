@@ -6,7 +6,7 @@ export default function SetupPendingPage() {
   if (isSupabaseConfigured()) redirect("/");
   return (
     <main className="mx-auto max-w-xl px-4 py-16">
-      <BrandMark className="mb-8 text-brand-900" />
+      <BrandMark size="lg" className="mb-8 text-brand-900" />
       <h1 className="text-2xl font-semibold text-slate-900">Falta conectar la base de datos</h1>
       <p className="mt-2 text-slate-600">La aplicación está instalada, pero todavía no tiene las llaves del proyecto de Supabase.</p>
       <div className="mt-6"><Alert kind="info" title="Qué hacer">

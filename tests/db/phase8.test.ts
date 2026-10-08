@@ -148,3 +148,10 @@ describe("Permisos", () => {
     expect(JSON.stringify(s)).not.toContain("re_test_123");
   });
 });
+
+describe("Marca", () => {
+  it("el correo lleva el logo servido desde el mismo sitio del enlace", async () => {
+    const h = (await one(rows<{ h: string }>("select app.email_html('Ana', 'Hola', null, 'https://lms.test/cursos/1') as h"))).h;
+    expect(h).toContain('src="https://lms.test/brand/grupo-tmc.png"');
+  });
+});

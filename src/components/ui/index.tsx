@@ -1,6 +1,8 @@
 import clsx from "clsx";
 import type { ReactNode } from "react";
 import { AlertTriangle, CheckCircle2, Info, XCircle } from "lucide-react";
+import Image from "next/image";
+import logo from "@/assets/grupo-tmc.png";
 
 export function PageHeader({ title, description, actions }: { title: string; description?: ReactNode; actions?: ReactNode }) {
   return (
@@ -123,16 +125,12 @@ export function Avatar({ name, size = 36 }: { name: string; size?: number }) {
 }
 
 /** Marca provisional hasta recibir el logo oficial del grupo. */
-export function BrandMark({ className }: { className?: string }) {
+/** Logo de Grupo TMC con la etiqueta «Capacitación». */
+export function BrandMark({ className, size = "md", label = true }: { className?: string; size?: "md" | "lg"; label?: boolean }) {
   return (
-    <span className={clsx("inline-flex items-center gap-2", className)}>
-      <span className="inline-flex size-8 items-center justify-center rounded-lg bg-brand-900 text-[11px] font-bold tracking-wider text-white ring-1 ring-accent-500/60">
-        TMC
-      </span>
-      <span className="leading-tight">
-        <span className="block text-sm font-semibold">Grupo TMC</span>
-        <span className="block text-[11px] text-current/60">Capacitación</span>
-      </span>
+    <span className={clsx("inline-flex items-center gap-3", className)}>
+      <Image src={logo} alt="Grupo TMC" priority className={size === "lg" ? "h-12 w-auto" : "h-8 w-auto"} />
+      {label && <span className="border-l border-current/20 pl-3 text-xs font-medium tracking-wide text-current/70">Capacitación</span>}
     </span>
   );
 }
