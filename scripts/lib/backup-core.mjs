@@ -12,7 +12,7 @@ import crypto from "node:crypto";
 import zlib from "node:zlib";
 
 export const SCHEMAS = ["public", "app", "audit"];
-const EXTRA = ["auth.users", "auth.identities"];
+const EXTRA = ["auth.users", "auth.identities", "auth.mfa_factors"];   // mfa_factors: la verificación en dos pasos de cada quien
 const SKIP = new Set(["app.rate_limits"]);   // efímero
 const BATCH = 2000;
 
@@ -115,7 +115,9 @@ export async function restore(q, lines, log = () => {}) {
   await q("begin");
   try {
     for (const t of ours) await q(`alter table ${qname(t.name)} disable trigger user`);
-    await q(`truncate ${tables.map((t) => qname(t.name)).join(", ")} restart identity cascade`);
+    // Nuestras tablas se vacían con TRUNCATE; las de auth (de Supabase) con DELETE: sus secuencias no son nuestras.
+    await q(`truncate ${ours.map((t) => qname(t.name)).join(", ")} restart identity cascade`);
+    for (const t of [...order].reverse().filter((x) => x.name.startsWith("auth."))) await q(`delete from ${qname(t.name)}`);
     for (const t of order) {
       const rows = byTable.get(t.name) ?? [];
       if (!rows.length) continue;
