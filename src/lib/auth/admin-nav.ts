@@ -8,8 +8,8 @@ type Def = { href: string; label: string; icon: NavSection["items"][number]["ico
 const DEFS: { title?: string; items: Def[] }[] = [
   { items: [
     { href: "/admin", label: "Dashboard", icon: "dashboard", perms: ["*"], exact: true },
-    { href: "/admin/direccion", label: "Dirección", icon: "gauge", perms: ["dashboard.executive"], phase: 5 },
-    { href: "/admin/cumplimiento", label: "Cumplimiento", icon: "shield", perms: ["progress.read"], phase: 5 },
+    { href: "/admin/direccion", label: "Dirección", icon: "gauge", perms: ["dashboard.executive"] },
+    { href: "/admin/cumplimiento", label: "Cumplimiento", icon: "shield", perms: ["progress.read"] },
   ] },
   { title: "Personas", items: [
     { href: "/admin/usuarios", label: "Usuarios", icon: "users", perms: ["users.read"] },

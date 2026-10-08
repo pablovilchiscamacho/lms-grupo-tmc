@@ -47,6 +47,13 @@ Qué pasa solo:
 
 Para dejar de asignar a quienes lleguen, abre la asignación y pulsa **Desactivar**; lo ya asignado no cambia.
 
+## Tableros
+- **Dashboard** (al entrar): cumplimiento, vencidos, promedio y horas, más **Requiere atención**: cursos vencidos, personas reprobadas, lo que vence esta semana, exámenes por calificar y usuarios sin departamento o sin jefe. Cada aviso abre la lista exacta de personas.
+- **Cumplimiento**: la tabla por persona con semáforo (🟢 90 % o más · 🟡 70 a 89 % · 🔴 menos de 70 %). Filtra por empresa, sucursal, departamento, puesto, jefe, curso, semáforo, situación o fechas. Las pestañas Departamentos, Cursos, Sucursales y Empresas muestran el ranking; al hacer clic en un renglón ves a sus personas.
+- **Dirección**: indicadores generales, evolución mensual, cumplimiento por empresa y departamento, cursos con mayor reprobación y usuarios con mejor cumplimiento.
+
+Cada quien ve solo lo de su alcance: un jefe ve a su equipo; RH, su empresa; Dirección, todo el grupo. El cumplimiento cuenta solo los cursos **obligatorios**. La gráfica de evolución guarda una foto cada noche, así que se va llenando con el tiempo.
+
 ## Roles disponibles
 
 | Rol | Para quién | Puede |

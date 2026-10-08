@@ -19,7 +19,7 @@ Las pruebas de base de datos no necesitan Docker ni internet: cada archivo crea 
 - `pg_cron` no existe en PGlite: la migración de jobs se salta y las funciones (`audit.seal()`) se prueban llamándolas directamente.
 - PGlite es Postgres 18 y Supabase usa 15 o 17, así que las migraciones evitan la sintaxis exclusiva de versiones nuevas.
 
-## Cobertura actual: 96 pruebas (Fase 1: 39 · Fase 2: 23 · Fase 3: 19 + 2 del importador · Fase 4: 13)
+## Cobertura actual: 109 pruebas (Fase 1: 39 · Fase 2: 23 · Fase 3: 19 + 2 del importador · Fase 4: 13 · Fase 5: 13) + prueba de carga
 
 | Área (§65) | Pruebas |
 |---|---|
@@ -82,6 +82,20 @@ Se probó en vivo contra Supabase: examen con los 8 tipos, entrega, calificació
 | **Avisos** | Cada quien ve solo los suyos y solo puede marcarlos como leídos |
 
 Se probó en vivo contra Supabase: asignación por regla a EA · Ventas (2 personas), alta de una persona nueva en Ventas que recibió el curso automáticamente, prórroga desde su ficha y el aviso con contador en el menú del empleado.
+
+### Fase 5 (`tests/db/phase5.test.ts`)
+
+| Área | Pruebas |
+|---|---|
+| **Alcance** | Super Admin ve el grupo; RH de EA no ve TMC; el jefe ve su línea de reporte (directos e indirectos) y no a sí mismo; un jefe de sucursal ve a quien no tiene cursos; un empleado sin `progress.read` recibe `FORBIDDEN` |
+| **Por persona** | Semáforo verde, rojo y sin cursos; filtros de vencidos, por vencer, reprobados, departamento, jefe, búsqueda sin acentos y curso; orden peor y mejor primero |
+| **Ranking y actividad** | Departamentos ordenados por cumplimiento; cursos con % de reprobación; la actividad respeta el alcance |
+| **Evolución** | La foto diaria alimenta la gráfica mensual filtrada por alcance; la tabla no se puede leer directo |
+
+### Prueba de carga (`tests/db/load.test.ts`)
+`LOAD=1 npx vitest run tests/db/load.test.ts` crea 5 000 personas y 100 000 inscripciones sintéticas y mide cada consulta. Resultado en PGlite (más lento que Supabase): todas entre 2 y 160 ms; la meta de la Fase 5 era menos de 1 s.
+
+Se probó en vivo contra Supabase: inicio del administrador con «Requiere atención» y actividad, Cumplimiento por persona y por departamento, Dirección con evolución mensual, y la vista de un jefe limitada a su equipo.
 
 ## Regla para las fases siguientes
 Cada tabla nueva llega con sus pruebas de RLS: qué **puede** y qué **no puede** hacer cada rol, siempre con usuarios de dos empresas distintas. Cada RPC llega con su prueba de permiso negado.

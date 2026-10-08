@@ -146,3 +146,19 @@ Automático (triggers y jobs):
 - Inscripción creada, resultado del curso y calificación manual → aviso en `notifications` (con `dedupe_key`).
 - `pg_cron` `daily-assignments` (14:00 UTC, 08:00 en CDMX) → `app.daily_assignments_job()`: renovaciones 30 días antes de `valid_until` y recordatorios a 7, 3 y 1 días y al vencer.
 
+## Fase 5: tableros
+
+Todas exigen `progress.read` y aplican el alcance **una sola vez** con `app.scope_profiles` (jefe → su línea de reporte, RH → su empresa, Dirección o Super Admin → todo el grupo). Filtros `f` (jsonb): `company_id`, `branch_id`, `department_id` (incluye sub-áreas), `position_id`, `manager_id` (línea completa), `course_id`, `from` y `to` (fecha de asignación) y `q`.
+
+| Consulta (`src/features/dashboards/queries.ts`) | RPC | Devuelve |
+|---|---|---|
+| `dashboardSummary(f)` | `dashboard_summary` | Usuarios, asignados, completados, pendientes, vencidos, reprobados, vencen esta semana, cumplimiento, promedio, % de aprobación y reprobación, horas |
+| `dashboardPeople(f, orden, página)` | `dashboard_people` | Tabla por persona con semáforo; más filtros `light` (green/amber/red/none), `only_overdue`, `only_due_week` y `only_failed`; paginada en el servidor (máx. 500) |
+| `dashboardBreakdown(grupo, f)` | `dashboard_breakdown` | Ranking por `company`, `branch`, `department`, `position` o `course` |
+| `dashboardActivity(f, n)` | `dashboard_activity` | Asignaciones, terminados, aprobados y reprobados recientes |
+| `dashboardTrend(f, meses)` | `dashboard_trend` | Última foto de cada mes desde `compliance_snapshots` (vacío para alcance de equipo) |
+
+Definiciones (solo inscripciones **activas y obligatorias** de personas activas): *completado* = terminó y aprobó si hay examen; *reprobado* = sin intentos restantes; *vencido* = no terminado y pasada la fecha; *pendiente* = el resto. Cumplimiento = completados ÷ asignados. Semáforo: verde ≥ 90 %, amarillo 70–89 %, rojo < 70 %.
+
+`pg_cron` `compliance-snapshot` (07:00 UTC, 01:00 en CDMX) → `app.compliance_snapshot_job()`. La tabla no se lee directo: solo por `dashboard_trend`.
+
