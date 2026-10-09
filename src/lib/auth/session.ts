@@ -44,3 +44,13 @@ export async function requirePermission(perm: string | string[], nextPath?: stri
   if (!canAny(ctx, perms)) redirect("/admin?sin-permiso=1");
   return ctx;
 }
+
+/**
+ * Empresa «propia» de quien administra UNA sola empresa (sin roles de todo el grupo). Sirve para que lo que cree
+ * (cursos, preguntas) quede en su empresa y no en «Todo el grupo», donde no tendría permiso.
+ */
+export function homeCompany(ctx: SessionContext): string | null {
+  if (ctx.roles.some((r) => r.scope_type === "group")) return null;
+  const companies = [...new Set(ctx.roles.filter((r) => r.scope_type === "company" && r.scope_id).map((r) => r.scope_id as string))];
+  return companies.length === 1 ? companies[0] : null;
+}

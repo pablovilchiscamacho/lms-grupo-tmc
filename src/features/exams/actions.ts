@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import ExcelJS from "exceljs";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { getContext, homeCompany } from "@/lib/auth/session";
 import { must, mustData, safe, UserError, type ActionResult } from "@/lib/action";
 import { toFriendlyError } from "@/lib/errors";
 import { norm } from "@/lib/format";
@@ -11,6 +12,18 @@ import { cellText, parseQuestionRows, type ImportedQuestion } from "./import-par
 export type { ImportedQuestion };
 
 const uuid = z.string().uuid();
+
+/** Empresa dueña de una pregunta nueva: la del curso del examen; si no, la empresa propia de quien administra una sola. */
+async function questionOwner(supabase: Awaited<ReturnType<typeof createClient>>, examId?: string | null): Promise<string | null> {
+  if (examId && uuid.safeParse(examId).success) {
+    const { data } = await supabase.from("exams").select("course_versions!inner(courses!course_versions_course_id_fkey!inner(owner_company_id))").eq("id", examId).maybeSingle();
+    const owner = (data as { course_versions?: { courses?: { owner_company_id: string | null } } } | null)?.course_versions?.courses?.owner_company_id;
+    if (owner) return owner;
+  }
+  const ctx = await getContext();
+  return ctx ? homeCompany(ctx) : null;
+}
+
 
 async function revalidateExam(supabase: Awaited<ReturnType<typeof createClient>>, examId: string) {
   const { data } = await supabase.from("exams").select("course_versions(course_id)").eq("id", examId).maybeSingle();
@@ -74,7 +87,8 @@ export async function saveQuestion(q: QuestionInput, examId?: string | null): Pr
     const err = validateQuestion(q);
     if (err) throw new UserError(err, "VALIDATION");
     const supabase = await createClient();
-    const id = must(await supabase.rpc("save_question", { p: q })) as string;
+    const owner = q.id || q.owner_company_id ? q.owner_company_id : await questionOwner(supabase, examId);
+    const id = must(await supabase.rpc("save_question", { p: { ...q, owner_company_id: owner ?? null } })) as string;
     if (examId) {
       uuid.parse(examId);
       const exists = await supabase.from("exam_items").select("id").eq("exam_id", examId).eq("question_id", id).maybeSingle();
@@ -212,10 +226,11 @@ export async function commitQuestionImport(questions: QuestionInput[], examId: s
     }
     const ids: string[] = [];
     const failed: { prompt: string; error: string }[] = [];
+    const owner = await questionOwner(supabase, examId);
     for (const q of questions) {
       const err = validateQuestion(q);
       if (err) { failed.push({ prompt: q.prompt, error: err }); continue; }
-      const r = await supabase.rpc("save_question", { p: { ...q, id: null, category_id: category, source: "import" } });
+      const r = await supabase.rpc("save_question", { p: { ...q, id: null, category_id: category, source: "import", owner_company_id: owner } });
       if (r.error) failed.push({ prompt: q.prompt, error: toFriendlyError(r.error).message });
       else ids.push(r.data as string);
     }

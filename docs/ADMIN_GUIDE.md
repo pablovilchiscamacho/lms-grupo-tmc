@@ -79,6 +79,9 @@ Cada descarga queda registrada en la bitácora. En la ficha de cada persona, **E
 - **Salud del sistema**: un aviso verde «Todo funciona correctamente» o la lista de lo que hay que revisar (tareas automáticas que fallaron, correos con error, exámenes atorados).
 - Accesos directos a Organización, Notificaciones, firma de constancias, Espacio usado e integridad de la bitácora.
 
+## Administradores de una sola empresa (por ejemplo, el piloto de ATPVA)
+Asígnales **Administrador de Capacitación** y **Administrador de RH** con alcance **Empresa: <su empresa>**. Pueden dar de alta e importar personas, crear cursos (quedan como de su empresa; no ven la opción «Todo el grupo»), crear preguntas (quedan en el banco de su empresa), asignar, calificar y ver tableros, reportes, constancias y trazabilidad, **solo de su empresa**. No ven ni cambian la configuración global (correo, firma, salud del sistema) ni revocan constancias. La estructura de la empresa (sucursales, departamentos, puestos) la crea el Super Admin en **Organización**.
+
 ## Roles disponibles
 
 | Rol | Para quién | Puede |

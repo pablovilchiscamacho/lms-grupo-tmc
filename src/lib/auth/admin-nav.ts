@@ -2,7 +2,7 @@ import type { NavSection } from "@/components/layout/nav";
 import type { SessionContext } from "@/types/context";
 import { canAny } from "./session";
 
-type Def = { href: string; label: string; icon: NavSection["items"][number]["icon"]; perms: string[]; phase?: number; exact?: boolean };
+type Def = { href: string; label: string; icon: NavSection["items"][number]["icon"]; perms: string[]; phase?: number; exact?: boolean; groupOnly?: boolean };
 
 /** Menú de administración (§35). Solo aparece lo que el usuario puede usar; lo que aún no existe se marca con su fase. */
 const DEFS: { title?: string; items: Def[] }[] = [
@@ -24,7 +24,7 @@ const DEFS: { title?: string; items: Def[] }[] = [
   ] },
   { title: "Control", items: [
     { href: "/admin/reportes", label: "Reportes", icon: "reports", perms: ["reports.read"] },
-    { href: "/admin/notificaciones", label: "Notificaciones", icon: "bell", perms: ["notifications.manage"] },
+    { href: "/admin/notificaciones", label: "Notificaciones", icon: "bell", perms: ["notifications.manage"], groupOnly: true },   // configuración global
     { href: "/admin/auditoria", label: "Auditoría", icon: "audit", perms: ["audit.read"] },
     { href: "/admin/configuracion", label: "Configuración", icon: "settings", perms: ["settings.manage"] },
   ] },
@@ -34,7 +34,7 @@ export function adminNav(ctx: SessionContext): NavSection[] {
   return DEFS.map((s) => ({
     title: s.title,
     items: s.items
-      .filter((i) => i.perms.includes("*") || canAny(ctx, i.perms))
+      .filter((i) => (i.perms.includes("*") || canAny(ctx, i.perms)) && (!i.groupOnly || ctx.roles.some((r) => r.scope_type === "group")))
       .map(({ href, label, icon, phase, exact }) => ({ href, label, icon, phase, exact })),
   })).filter((s) => s.items.length > 0);
 }

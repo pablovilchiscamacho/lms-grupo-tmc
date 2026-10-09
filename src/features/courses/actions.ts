@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { getContext, homeCompany } from "@/lib/auth/session";
 import { must, mustData, safe, UserError, type ActionResult } from "@/lib/action";
 
 const uuid = z.string().uuid();
@@ -36,6 +37,9 @@ export async function createCourse(_: unknown, fd: FormData): Promise<ActionResu
   let id = "";
   const r = await safe(async () => {
     const v = courseFromForm(fd);
+    const ctx = await getContext();
+    const home = ctx ? homeCompany(ctx) : null;
+    if (!v.owner_company_id && home) v.owner_company_id = home;
     const supabase = await createClient();
     id = must(await supabase.rpc("create_course", { p: v })) as string;
   });

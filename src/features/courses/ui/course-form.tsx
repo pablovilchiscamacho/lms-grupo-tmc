@@ -10,9 +10,11 @@ export type CourseFormValues = {
   estimated_minutes?: number | null; issues_certificate?: boolean; validity_months?: number | null;
 };
 
-export function CourseForm({ action, initial = {}, companies, mode }: {
+export function CourseForm({ action, initial = {}, companies, mode, allowGroup = true }: {
   action: (prev: unknown, fd: FormData) => Promise<ActionResult>; initial?: CourseFormValues;
   companies: { id: string; name: string }[]; mode: "create" | "edit";
+  /** false: quien administra una sola empresa no ve «Todo el grupo». */
+  allowGroup?: boolean;
 }) {
   const [state, formAction] = useActionState(action, null);
   const fe = state && !state.ok ? state.error.fieldErrors ?? {} : {};
@@ -35,8 +37,8 @@ export function CourseForm({ action, initial = {}, companies, mode }: {
       </Field>
       <div className="grid gap-4 sm:grid-cols-3">
         <Field label="¿De qué empresa es?" htmlFor="owner_company_id" error={fe.owner_company_id} hint="«Todo el grupo» lo pueden usar todas las empresas.">
-          <select {...inp("owner_company_id")} defaultValue={initial.owner_company_id ?? ""} className="input" disabled={mode === "edit"}>
-            <option value="">Todo el grupo</option>
+          <select {...inp("owner_company_id")} defaultValue={initial.owner_company_id ?? (allowGroup ? "" : companies[0]?.id ?? "")} className="input" disabled={mode === "edit"}>
+            {allowGroup && <option value="">Todo el grupo</option>}
             {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         </Field>
