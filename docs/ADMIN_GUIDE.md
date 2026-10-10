@@ -103,3 +103,14 @@ Registro de solo lectura de accesos, altas, cambios, roles y estados, con autor,
 ## Trazabilidad para auditorías ISO
 - **De una persona en un curso**: en la ficha de la persona (o en Participantes del curso), pulsa el ícono 🔍 del curso. Verás las respuestas a las preguntas del auditor: quién creó el curso, qué versión tomó, qué respondió en el examen, quién calificó, cuándo aprobó y qué constancia obtuvo. **Evidencia PDF** lo descarga para entregarlo.
 - **De un curso**: en el curso, botón **Historial**: cada versión con quién la publicó, qué cambió y cuántas personas la tomaron, más todos los cambios.
+
+## Aviso de privacidad
+
+**Control → Aviso de privacidad** (Super Admin edita; Capital Humano ve el avance de su empresa).
+
+- Hay un aviso para todo el grupo y, si se quiere, uno propio por empresa (el de la empresa tiene prioridad).
+- `{{empresa}}` y `{{fecha}}` se llenan solos. Lo que esté entre `[CORCHETES]` (domicilio, correo de contacto) debe completarse: la plataforma no deja publicar mientras falte.
+- Al publicar, a cada persona se le pide aceptarlo la próxima vez que entre; quien no acepta no puede usar la plataforma. Una versión nueva se vuelve a pedir.
+- Cada aceptación guarda fecha, IP y navegador y no se puede modificar ni borrar. La ficha del usuario muestra qué versión aceptó.
+- La página pública `/privacidad` muestra el aviso del grupo; está enlazada desde la pantalla de ingreso.
+- El texto base es una plantilla: debe revisarlo el área Legal antes de publicarlo.
