@@ -116,3 +116,16 @@ describe("Verificación pública y revocación", () => {
     expect(r.status).toBe("expired");
   });
 });
+
+describe("Firma por empresa", () => {
+  it("una empresa con firma propia la usa; las demás conservan la global", async () => {
+    await db.query("update public.settings set value = value || '{\"signer_name\":\"Firma Global\"}' where key = 'certificates' and company_id is null");
+    await db.query(`insert into public.settings (key, company_id, value) values ('certificates', $1, '{"signer_name":"Iliana Carmona","signer_title":"Capital Humano"}')`, [ID.tmc]);
+    await q(db, T, "select public.create_assignment($1)", [{ course_id: course, mode: "direct", user_ids: [ID.empTmc, ID.empVta] }]);
+    await finish({ uid: ID.empTmc, aal: "aal1" }, course, lessonA);
+    await finish({ uid: ID.empVta, aal: "aal1" }, course, lessonA);
+    const r = await rows<{ user_id: string; signer_name: string; signer_title: string | null }>("select user_id, signer_name, signer_title from public.certificates where user_id = any($1)", [[ID.empTmc, ID.empVta]]);
+    expect(r.find((x) => x.user_id === ID.empTmc)).toMatchObject({ signer_name: "Iliana Carmona", signer_title: "Capital Humano" });
+    expect(r.find((x) => x.user_id === ID.empVta)?.signer_name).toBe("Firma Global");
+  });
+});

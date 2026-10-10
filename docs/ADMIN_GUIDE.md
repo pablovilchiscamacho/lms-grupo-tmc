@@ -60,6 +60,7 @@ Cada quien ve solo lo de su alcance: un jefe ve a su equipo; RH, su empresa; Dir
 - Busca por nombre, folio o curso, y filtra por estado.
 - **Revocar** (ícono ⊘): solo el Super Admin, con motivo. No se puede deshacer.
 - **Firma de las constancias**: escribe el nombre y el cargo de quien firma. Se usa en las constancias nuevas; las ya emitidas conservan la suya.
+- **Firma por empresa**: una empresa puede tener su propia firma (`settings` clave `certificates` con su `company_id`); sus constancias la usan en lugar de la global. ATPVA firma con Iliana Carmona, Capital Humano.
 
 ## Reportes (Control → Reportes)
 1. Elige uno de los 10 reportes: Cumplimiento, Cursos vencidos, Personas reprobadas, Calificaciones, Exámenes, Horas de capacitación, Certificados, Cursos, Usuarios o Actividad.
