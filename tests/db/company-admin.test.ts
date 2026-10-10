@@ -4,13 +4,13 @@ import { errorOf, freshDb, q } from "./harness";
 import { ID, seed } from "./fixtures";
 
 /**
- * Administradora de UNA empresa (como Iliana en el piloto de ATPVA): roles de Capacitación y de RH con alcance
+ * Administradora de UNA empresa (como Capital Humano en el piloto de ATPVA): roles de Capacitación y de RH con alcance
  * de empresa. Debe poder operar todo en su empresa y nada fuera de ella.
  */
 let db: PGlite;
-const ILIANA = "00000000-0000-4000-9000-0000000000a1";
+const ADMIN_ATPVA = "00000000-0000-4000-9000-0000000000a1";
 const NUEVO = "00000000-0000-4000-9000-0000000000a2";
-const IL = { uid: ILIANA, aal: "aal2" as const };
+const IL = { uid: ADMIN_ATPVA, aal: "aal2" as const };
 const one = async <R,>(p: Promise<R[]>) => (await p)[0];
 const TOKEN = "token-del-dispositivo-0123456789";
 let course: string, exam: string, lesson: string;
@@ -18,11 +18,11 @@ let course: string, exam: string, lesson: string;
 beforeAll(async () => {
   db = await freshDb();
   await seed(db);
-  await db.query("insert into auth.users (id, email) values ($1, 'iliana@tmc.test')", [ILIANA]);
+  await db.query("insert into auth.users (id, email) values ($1, 'capital.humano@tmc.test')", [ADMIN_ATPVA]);
   await db.query(`insert into public.profiles (id, first_name, last_name_paternal, email, auth_email, company_id)
-                  values ($1, 'Iliana', 'Capital Humano', 'iliana@tmc.test', 'iliana@tmc.test', $2)`, [ILIANA, ID.tmc]);
+                  values ($1, 'María', 'Capital Humano', 'capital.humano@tmc.test', 'capital.humano@tmc.test', $2)`, [ADMIN_ATPVA, ID.tmc]);
   for (const role of ["training_admin", "hr_admin"]) {
-    await db.query(`insert into public.user_roles (user_id, role_id, scope_type, scope_id) select $1, id, 'company', $2 from public.roles where key = $3`, [ILIANA, ID.tmc, role]);
+    await db.query(`insert into public.user_roles (user_id, role_id, scope_type, scope_id) select $1, id, 'company', $2 from public.roles where key = $3`, [ADMIN_ATPVA, ID.tmc, role]);
   }
 });
 
