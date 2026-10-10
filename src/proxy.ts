@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/proxy";
 import { isSupabaseConfigured } from "@/lib/env";
 
-const PUBLIC = [/^\/entrar/, /^\/recuperar/, /^\/auth\//, /^\/verify\//, /^\/configuracion-pendiente/, /^\/api\/(health|jobs)/];
+const PUBLIC = [/^\/privacidad/, /^\/entrar/, /^\/recuperar/, /^\/auth\//, /^\/verify\//, /^\/configuracion-pendiente/, /^\/api\/(health|jobs)/];
 
 /**
  * Chequeo optimista: refresca la sesión y manda a /entrar si no hay sesión.

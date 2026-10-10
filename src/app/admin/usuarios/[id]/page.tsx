@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, FileDown } from "lucide-react";
 import { requirePermission, can } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getUser, listRoles } from "@/features/users/queries";
 import { getOrgOptions } from "@/features/org/queries";
 import { updateUser } from "@/features/users/actions";
@@ -33,6 +34,10 @@ export default async function UserDetailPage({ params }: PageProps<"/admin/usuar
     const { data } = await supabase.rpc("search_audit", { p_entity_id: u.id, p_limit: 30 });
     history = (data ?? []) as AuditEntry[];
   }
+  const { data: privacy } = await (await createClient()).from("privacy_acceptances")
+    .select("accepted_at, notice_id").eq("user_id", u.id).order("accepted_at", { ascending: false }).limit(1).maybeSingle();
+  // Los avisos solo se leen por RPC; la versión se busca con el cliente de servidor (la aceptación ya pasó RLS).
+  const privacyVersion = privacy && (await createAdminClient().from("privacy_notices").select("version").eq("id", privacy.notice_id).single()).data?.version;
   const editable = can(ctx, "users.update") && u.status !== "deleted";
   const training = await enrollmentsFor({ user: u.id });
   const trainingExams = await examsByVersion(training.map((t) => t.course_version_id ?? ""));
@@ -78,6 +83,7 @@ export default async function UserDetailPage({ params }: PageProps<"/admin/usuar
             <dl className="space-y-2 text-sm">
               <Row k="Último acceso" v={u.last_login_at ? fmtDateTime(u.last_login_at, tz) : "Nunca"} />
               <Row k="Alta" v={fmtDate(u.created_at, tz)} />
+              <Row k="Aviso de privacidad" v={privacy ? `Aceptó v${privacyVersion ?? "?"} el ${fmtDateTime(privacy.accepted_at, tz)}` : "Sin aceptar"} />
               <Row k="Acceso con" v={u.has_real_email ? "Correo" : u.username ? `Usuario @${u.username}` : `Núm. ${u.employee_number ?? "—"}`} />
               {u.must_change_password && <Row k="Contraseña" v={<Badge tone="amber">Temporal</Badge>} />}
             </dl>

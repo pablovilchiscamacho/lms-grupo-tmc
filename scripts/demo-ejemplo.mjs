@@ -46,7 +46,7 @@ const course = await ADM(async () => (await one("select public.create_course($1)
   estimated_minutes: 30, validity_months: 12, issues_certificate: true,
 }])).id);
 const version = (await one("select id from public.course_versions where course_id = $1", [course])).id;
-const module = (await one("select id from public.course_modules where course_version_id = $1", [version])).id;
+const moduleId = (await one("select id from public.course_modules where course_version_id = $1", [version])).id;
 
 // Presentación en PDF (4 páginas, como una presentación exportada)
 const slides = [
@@ -73,9 +73,9 @@ if (up.error) throw up.error;
 await q("select public.file_finalize($1, $2)", [prep.file_id, { ok: true, mime_type: "application/pdf", page_count: 4, sha256: sha }]);
 
 const [l1, l2] = await ADM(async () => {
-  const a = (await one("insert into public.lessons (module_id, title, position, completion_rule) values ($1, 'Reglamento de seguridad en patio', 1, 'all_pages') returning id", [module])).id;
+  const a = (await one("insert into public.lessons (module_id, title, position, completion_rule) values ($1, 'Reglamento de seguridad en patio', 1, 'all_pages') returning id", [moduleId])).id;
   await q("insert into public.lesson_contents (lesson_id, type, file_id) values ($1, 'pdf', $2)", [a, prep.file_id]);
-  const b = (await one("insert into public.lessons (module_id, title, position, completion_rule) values ($1, 'Equipo de protección personal', 2, 'manual') returning id", [module])).id;
+  const b = (await one("insert into public.lessons (module_id, title, position, completion_rule) values ($1, 'Equipo de protección personal', 2, 'manual') returning id", [moduleId])).id;
   await q("insert into public.lesson_contents (lesson_id, type, body_html) values ($1, 'text', $2)", [b,
     "<h2>Tu equipo de protección</h2><p>En el patio de maniobras el <strong>chaleco reflejante</strong> es obligatorio en todo momento. Además usa casco, botas de seguridad y guantes durante la carga y descarga.</p><p>Si tu equipo está dañado, repórtalo a tu jefe directo antes de iniciar el turno.</p>"]);
   return [a, b];

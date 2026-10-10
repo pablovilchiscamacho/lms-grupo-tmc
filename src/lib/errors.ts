@@ -15,6 +15,7 @@ const BUSINESS: Record<string, string> = {
   ROLE_ALREADY_ASSIGNED: "El usuario ya tiene ese rol con ese alcance.",
   IMPORT_TOO_LARGE: "El archivo tiene demasiadas filas (máximo 2,000 por importación).",
   AUDIT_IMMUTABLE: "La bitácora no se puede modificar.",
+  IMMUTABLE: "Este registro no se puede modificar.",
   RATE_LIMITED: "Demasiados intentos. Espera un minuto e inténtalo de nuevo.",
   VERSION_LOCKED: "Esta versión ya está publicada y no se puede modificar. Usa «Editar contenido» para crear una versión nueva.",
   REVIEW_REQUIRED: "Este curso debe pasar por revisión antes de publicarse.",

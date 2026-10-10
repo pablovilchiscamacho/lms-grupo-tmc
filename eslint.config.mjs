@@ -12,6 +12,7 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "public/**",   // archivos de terceros ya minificados (visor de PDF)
   ]),
 ]);
 

@@ -27,4 +27,6 @@ export type SessionContext = {
   roles: { key: string; name: string; scope_type: string; scope_id: string | null; requires_mfa: boolean }[];
   requires_mfa: boolean;
   aal: "aal1" | "aal2";
+  /** Hay un aviso de privacidad vigente que la persona aún no acepta. */
+  privacy_pending?: boolean;
 };

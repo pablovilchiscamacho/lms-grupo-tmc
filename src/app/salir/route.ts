@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
     await supabase.rpc("log_session_event", { p_action: "auth.logout" });
     await supabase.auth.signOut();
   }
-  const motivo = request.nextUrl.searchParams.get("motivo") === "inactivo" ? "inactivo" : "salida";
+  const m = request.nextUrl.searchParams.get("motivo");
+  const motivo = m === "inactivo" || m === "privacidad" ? m : "salida";
   return NextResponse.redirect(new URL(`/entrar?motivo=${motivo}`, request.url));
 }

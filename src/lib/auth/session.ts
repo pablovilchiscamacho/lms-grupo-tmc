@@ -21,11 +21,12 @@ export const can = (ctx: SessionContext, perm: string) => ctx.permissions.includ
 export const canAny = (ctx: SessionContext, perms: string[]) => perms.some((p) => ctx.permissions.includes(p));
 
 /** Usuario con sesión, activo y sin cambio de contraseña pendiente. */
-export async function requireUser(opts: { allowPasswordChange?: boolean } = {}): Promise<SessionContext> {
+export async function requireUser(opts: { allowPasswordChange?: boolean; allowPrivacy?: boolean } = {}): Promise<SessionContext> {
   const ctx = await getContext();
   if (!ctx) redirect("/entrar");
   if (ctx.profile.status !== "active") redirect("/salir?motivo=inactivo");
   if (ctx.profile.must_change_password && !opts.allowPasswordChange) redirect("/definir-contrasena?motivo=obligatorio");
+  if (ctx.privacy_pending && !opts.allowPrivacy && !opts.allowPasswordChange) redirect("/aviso-de-privacidad");
   return ctx;
 }
 
