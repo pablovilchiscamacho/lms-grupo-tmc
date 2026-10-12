@@ -108,7 +108,7 @@ export function ImportWizard() {
             <input id="file" name="file" type="file" accept=".xlsx,.csv" required className="input file:mr-3 file:rounded-md file:border-0 file:bg-brand-50 file:px-3 file:py-1 file:text-sm file:font-medium file:text-brand-800" />
           </div>
           <SubmitButton className="btn-primary" pendingText="Validando…"><FileSpreadsheet className="size-4" /> Validar archivo</SubmitButton>
-          <a href="/plantillas/usuarios.csv" download className="btn-ghost"><Download className="size-4" /> Plantilla</a>
+          <a href="/plantillas/usuarios.xlsx" download className="btn-ghost"><Download className="size-4" /> Plantilla</a>
         </form>
         {state && !state.ok && <div className="mt-3"><Alert kind="error">{state.error.message}</Alert></div>}
       </Card>
