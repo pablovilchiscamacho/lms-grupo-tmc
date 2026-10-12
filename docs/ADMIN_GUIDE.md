@@ -18,10 +18,11 @@
 - El **jefe directo** define quién lo ve como manager.
 
 ### Importación masiva (Usuarios → Importar)
-1. Descarga la **plantilla**, llénala y súbela (.xlsx o .csv).
+1. Descarga la **plantilla** (Excel), llénala y súbela (también se acepta .csv).
 2. El sistema valida **antes** de crear: ✓ válidos, ⚠ con errores y ❌ duplicados. Usa **Corregir** en una fila y luego **Volver a validar**.
 3. Elige cómo recibirán su acceso y pulsa **Importar**. Al terminar, descarga el archivo de **accesos temporales** y entrégalo de forma segura; no se puede volver a consultar.
 4. Los jefes que vienen en el mismo archivo se ligan automáticamente al final.
+5. **Estructura nueva:** si el archivo trae una sucursal, departamento o puesto que no existe, la validación lo anuncia («Se creará…») y al importar se da de alta solo, una vez aunque se repita (no importan mayúsculas, acentos ni espacios de más). Revisa la lista antes de importar para que un error de dedo no quede como un departamento aparte. Solo lo hace quien administra la empresa completa; con alcance de sucursal o departamento sigue marcando «no encontrado».
 
 ### Ficha del usuario
 - **Datos**: edita la información. Si cambias el correo, cambia también su forma de entrar.
@@ -81,7 +82,7 @@ Cada descarga queda registrada en la bitácora. En la ficha de cada persona, **E
 - Accesos directos a Organización, Notificaciones, firma de constancias, Espacio usado e integridad de la bitácora.
 
 ## Administradores de una sola empresa (por ejemplo, el piloto de ATPVA)
-Asígnales **Administrador de Capacitación** y **Administrador de RH** con alcance **Empresa: <su empresa>**. Pueden dar de alta e importar personas, crear cursos (quedan como de su empresa; no ven la opción «Todo el grupo»), crear preguntas (quedan en el banco de su empresa), asignar, calificar y ver tableros, reportes, constancias y trazabilidad, **solo de su empresa**. No ven ni cambian la configuración global (correo, firma, salud del sistema) ni revocan constancias. La estructura de la empresa (sucursales, departamentos, puestos) la crea el Super Admin en **Organización**.
+Asígnales **Administrador de Capacitación** y **Administrador de RH** con alcance **Empresa: <su empresa>**. Pueden dar de alta e importar personas, crear cursos (quedan como de su empresa; no ven la opción «Todo el grupo»), crear preguntas (quedan en el banco de su empresa), asignar, calificar y ver tableros, reportes, constancias y trazabilidad, **solo de su empresa**. No ven ni cambian la configuración global (correo, firma, salud del sistema) ni revocan constancias. La estructura de la empresa (sucursales, departamentos, puestos) se crea sola al importar al personal, o la da de alta el Super Admin en **Organización**.
 
 ## Roles disponibles
 

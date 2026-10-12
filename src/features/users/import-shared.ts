@@ -7,6 +7,12 @@ export type RawRow = Partial<Record<ImportField, string>>;
 export type CheckedRow = {
   row: number; status: "valid" | "error" | "duplicate"; errors: string[]; raw: RawRow;
   data: Record<string, unknown>; manager_ref: string | null;
+  /** Sucursales, departamentos o puestos que no existen y se crearán al importar. */
+  new_org?: NewOrg[];
+};
+export type NewOrg = { kind: "branch" | "department" | "position"; name: string };
+export const ORG_KIND: Record<NewOrg["kind"], [string, string]> = {
+  branch: ["sucursal", "sucursales"], department: ["departamento", "departamentos"], position: ["puesto", "puestos"],
 };
 export type ImportOutcome = {
   row: number; ok: boolean; id?: string; name: string; login?: string; tempPassword?: string; invited?: boolean;

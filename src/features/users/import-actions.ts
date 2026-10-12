@@ -9,7 +9,7 @@ import { toFriendlyError } from "@/lib/errors";
 import { APP_URL } from "@/lib/env";
 import { norm } from "@/lib/format";
 
-import { type ImportField, type CheckedRow, type ImportOutcome, type RawRow } from "./import-shared";
+import { type ImportField, type CheckedRow, type ImportOutcome, type NewOrg, type RawRow } from "./import-shared";
 
 /** Encabezados aceptados (sin acentos ni mayúsculas) → campo. */
 const HEADER_MAP: Record<string, ImportField> = {
@@ -172,6 +172,15 @@ export async function importBatch(rows: CheckedRow[], mode: "invite_or_temp" | "
       p_data: { created: out.filter((o) => o.ok).length, failed: out.filter((o) => !o.ok).length },
     });
     return { ok: true, data: out };
+  });
+}
+
+/** Antes de crear a las personas: da de alta las sucursales, departamentos y puestos nuevos del archivo. */
+export async function createImportOrg(rows: RawRow[]): Promise<ActionResult<Record<NewOrg["kind"], string[]>>> {
+  return safe(async () => {
+    const supabase = await createClient();
+    const made = must(await supabase.rpc("admin_import_create_org", { p_rows: rawSchema.parse(rows) }));
+    return { ok: true, data: made as Record<NewOrg["kind"], string[]> };
   });
 }
 

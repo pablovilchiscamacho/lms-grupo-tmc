@@ -5,10 +5,24 @@ import { AlertTriangle, CheckCircle2, Download, FileSpreadsheet, Loader2, Refres
 import clsx from "clsx";
 import { Alert, Badge, Card } from "@/components/ui";
 import { SubmitButton } from "@/components/ui/client";
-import { importBatch, linkImportedManagers, previewImport, revalidateImport } from "./import-actions";
-import { FIELD_TITLES, IMPORT_FIELDS, type CheckedRow, type ImportOutcome, type RawRow } from "./import-shared";
+import { createImportOrg, importBatch, linkImportedManagers, previewImport, revalidateImport } from "./import-actions";
+import { FIELD_TITLES, IMPORT_FIELDS, ORG_KIND, type CheckedRow, type ImportOutcome, type NewOrg, type RawRow } from "./import-shared";
 
 const BATCH = 25;
+const key = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
+
+/** Lo nuevo del archivo, sin repetir (solo de filas válidas), agrupado por tipo. */
+function newOrgOf(rows: CheckedRow[]) {
+  const out: Record<NewOrg["kind"], string[]> = { branch: [], department: [], position: [] };
+  const seen = new Set<string>();
+  for (const r of rows) if (r.status === "valid") for (const n of r.new_org ?? []) {
+    const k = `${n.kind}:${key(n.name)}`;
+    if (!seen.has(k)) { seen.add(k); out[n.kind].push(n.name); }
+  }
+  return out;
+}
+const orgSummary = (o: Record<NewOrg["kind"], string[]>) =>
+  (Object.keys(o) as NewOrg["kind"][]).filter((k) => o[k].length).map((k) => `${o[k].length} ${ORG_KIND[k][o[k].length === 1 ? 0 : 1]}`).join(", ");
 type Filter = "all" | "valid" | "error" | "duplicate";
 
 export function ImportWizard() {
@@ -24,6 +38,7 @@ export function ImportWizard() {
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const [results, setResults] = useState<ImportOutcome[] | null>(null);
   const [linkInfo, setLinkInfo] = useState<string | null>(null);
+  const [orgInfo, setOrgInfo] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const counts = useMemo(() => ({
@@ -31,6 +46,8 @@ export function ImportWizard() {
     error: rows?.filter((r) => r.status === "error").length ?? 0,
     duplicate: rows?.filter((r) => r.status === "duplicate").length ?? 0,
   }), [rows]);
+  const newOrg = useMemo(() => newOrgOf(rows ?? []), [rows]);
+  const newOrgText = orgSummary(newOrg);
 
   async function revalidate() {
     if (!rows) return;
@@ -44,9 +61,18 @@ export function ImportWizard() {
 
   async function runImport() {
     if (!rows) return;
-    const valid = rows.filter((r) => r.status === "valid");
-    if (!confirm(`¿Crear ${valid.length} usuario${valid.length === 1 ? "" : "s"}?`)) return;
+    let valid = rows.filter((r) => r.status === "valid");
+    if (!confirm(`¿Crear ${valid.length} usuario${valid.length === 1 ? "" : "s"}?${newOrgText ? `\n\nAntes se darán de alta ${newOrgText}.` : ""}`)) return;
     setError(null);
+    if (newOrgText) {
+      // Primero la estructura; luego se revalidan las filas para que ya traigan su sucursal, departamento y puesto.
+      const made = await createImportOrg(valid.map((r) => r.raw));
+      if (!made.ok) return setError(made.error.message);
+      const again = await revalidateImport(valid.map((r) => r.raw));
+      if (!again.ok) return setError(again.error.message);
+      valid = again.data!.map((r, i) => ({ ...r, row: valid[i].row })).filter((r) => r.status === "valid");
+      setOrgInfo(`Se dieron de alta ${orgSummary(made.data!) || "0 nuevos"}.`);
+    }
     const all: ImportOutcome[] = [];
     setProgress({ done: 0, total: valid.length });
     for (let i = 0; i < valid.length; i += BATCH) {
@@ -81,6 +107,7 @@ export function ImportWizard() {
       <div className="space-y-4">
         <Alert kind={bad.length ? "warning" : "success"} title="Importación terminada">
           {ok.length} usuario{ok.length === 1 ? "" : "s"} creado{ok.length === 1 ? "" : "s"}{bad.length ? `, ${bad.length} con error` : ""}.
+          {orgInfo && <> {orgInfo}</>}
           {linkInfo && <> {linkInfo}</>}
         </Alert>
         {ok.some((r) => r.tempPassword) && (
@@ -127,6 +154,16 @@ export function ImportWizard() {
             )}
           </div>
           {error && <Alert kind="error">{error}</Alert>}
+          {newOrgText && (
+            <Alert kind="info" title={`Al importar se darán de alta ${newOrgText}`}>
+              <ul className="mt-1 space-y-0.5">
+                {(Object.keys(newOrg) as NewOrg["kind"][]).filter((k) => newOrg[k].length).map((k) => (
+                  <li key={k}><span className="font-medium capitalize">{ORG_KIND[k][1]}:</span> {newOrg[k].join(", ")}</li>
+                ))}
+              </ul>
+              <p className="mt-2">Revisa que estén bien escritos: si uno es error de dedo (por ejemplo «Almacn»), corrígelo con «Corregir» o en el Excel para que no quede repetido.</p>
+            </Alert>
+          )}
 
           <div className="card overflow-x-auto">
             <table className="w-full min-w-[900px] text-sm">
@@ -165,6 +202,7 @@ export function ImportWizard() {
                             {r.status === "duplicate" && <p className="text-red-600">Ya existe (correo, número de empleado o usuario) o está repetido en el archivo.</p>}
                             {r.errors.map((e) => <p key={e} className="text-amber-700">{e}</p>)}
                             {r.status === "valid" && r.manager_ref && <p className="text-slate-500">Jefe {r.manager_ref}: se ligará al terminar.</p>}
+                            {r.status === "valid" && r.new_org?.map((n) => <p key={n.kind} className="text-brand-700">Se creará {ORG_KIND[n.kind][0]}: {n.name}</p>)}
                           </td>
                         </>
                       )}

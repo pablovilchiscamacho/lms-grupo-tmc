@@ -12,9 +12,9 @@ const COLS = [
   ["Número de empleado", "*", "Solo números o letras, sin espacios. También sirve para entrar.", "1023"],
   ["Usuario", "*", "Solo para quien no tiene correo ni número de empleado (letras, números, punto o guion).", "maria.lopez"],
   ["Empresa", "Sí", "Nombre corto o completo, tal como está en la plataforma.", "ATPVA"],
-  ["Sucursal", "No", "Debe existir en Organización.", "Querétaro"],
-  ["Departamento", "No", "Debe existir en Organización. Sirve para asignar cursos por área.", "Capital Humano"],
-  ["Puesto", "No", "Debe existir en Organización. Sirve para asignar cursos por puesto.", "Analista"],
+  ["Sucursal", "No", "Si no existe en Organización, se crea al importar.", "Querétaro"],
+  ["Departamento", "No", "Si no existe, se crea al importar. Sirve para asignar cursos por área.", "Capital Humano"],
+  ["Puesto", "No", "Si no existe, se crea al importar. Sirve para asignar cursos por puesto.", "Analista"],
   ["Jefe", "No", "Número de empleado o correo del jefe directo; puede venir en este mismo archivo.", "1001"],
   ["Teléfono", "No", "10 dígitos, sin espacios.", "4421234567"],
   ["Fecha de ingreso", "No", "dd/mm/aaaa", "15/01/2024"],
@@ -43,7 +43,7 @@ ins.addRow(["Cómo llenar la plantilla"]).font = { bold: true, size: 14, color: 
 for (const t of [
   "1. Captura una persona por renglón en la hoja «Personal», debajo de los títulos. No cambies ni borres los títulos.",
   "2. Cada persona necesita al menos uno de estos tres para poder entrar: Email, Número de empleado o Usuario.",
-  "3. Empresa, Sucursal, Departamento y Puesto deben escribirse igual que en la plataforma (Organización).",
+  "3. La Empresa debe existir en la plataforma. Las sucursales, departamentos y puestos que no existan se crean solos al importar: escríbelos siempre igual (no importan mayúsculas ni acentos).",
   "4. Guarda el archivo como Excel (.xlsx) y súbelo en Usuarios → Importar. Antes de crear a nadie, la plataforma revisa todo y marca los errores.",
 ]) ins.addRow([t]);
 ins.addRow([]);
