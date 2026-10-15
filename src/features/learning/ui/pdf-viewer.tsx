@@ -3,11 +3,18 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Loader2, Maximize2, Minimize2 } from "lucide-react";
 import type { PDFDocumentProxy, RenderTask } from "pdfjs-dist";
 
+/** Si el documento no abre en este tiempo, se considera que el teléfono no puede mostrarlo. */
+const LOAD_TIMEOUT_MS = 25_000;
+
 /**
  * Visor de PDF/presentaciones página por página (como diapositivas). Reporta cada página vista.
  * El archivo llega por /api/files/[id], que autoriza y redirige a una URL firmada.
+ * Usa la versión «legacy» de pdf.js, que funciona en celulares con navegador viejo. Si aun así no abre, avisa con
+ * onFail (la lección cuenta como vista) y muestra el documento con el lector propio del teléfono.
  */
-export function PdfViewer({ fileId, startPage = 1, onPage }: { fileId: string; startPage?: number; onPage: (page: number) => void }) {
+export function PdfViewer({ fileId, startPage = 1, onPage, onFail }: {
+  fileId: string; startPage?: number; onPage: (page: number) => void; onFail?: () => void;
+}) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const box = useRef<HTMLDivElement>(null);
   const task = useRef<RenderTask | null>(null);
@@ -18,18 +25,22 @@ export function PdfViewer({ fileId, startPage = 1, onPage }: { fileId: string; s
   const [full, setFull] = useState(false);
 
   useEffect(() => {
-    let cancelled = false;
+    let cancelled = false, loaded = false;
+    const fail = () => { if (!cancelled && !loaded) { cancelled = true; setError("fail"); onFail?.(); } };
+    const timer = setTimeout(fail, LOAD_TIMEOUT_MS);
     (async () => {
       try {
-        const pdfjs = await import("pdfjs-dist");
+        const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
         pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
         const d = await pdfjs.getDocument({ url: `/api/files/${fileId}` }).promise;
-        if (!cancelled) { setDoc(d); setPage((p) => Math.min(Math.max(p, 1), d.numPages)); }
+        if (!cancelled) { loaded = true; clearTimeout(timer); setDoc(d); setPage((p) => Math.min(Math.max(p, 1), d.numPages)); }
       } catch {
-        if (!cancelled) setError("No se pudo abrir el documento. Recarga la página.");
+        fail();
       }
     })();
-    return () => { cancelled = true; };
+    return () => { cancelled = true; clearTimeout(timer); };
+    // onFail se lee al fallar; no debe reiniciar la carga.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fileId]);
 
   const render = useCallback(async () => {
@@ -71,7 +82,16 @@ export function PdfViewer({ fileId, startPage = 1, onPage }: { fileId: string; s
     return () => window.removeEventListener("keydown", onKey);
   }, [doc]);
 
-  if (error) return <p className="rounded-lg bg-red-50 p-4 text-sm text-red-700">{error}</p>;
+  if (error) return (
+    <div className="space-y-2">
+      <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
+        Tu teléfono no pudo mostrar la presentación aquí, así que se abre con su propio lector. Tu avance ya quedó registrado y puedes continuar.
+      </p>
+      <object data={`/api/files/${fileId}`} type="application/pdf" className="h-[70vh] w-full rounded-lg bg-slate-100">
+        <a href={`/api/files/${fileId}`} target="_blank" rel="noopener" className="block p-4 text-center text-sm font-medium text-brand-700 underline">Ver el documento</a>
+      </object>
+    </div>
+  );
   const total = doc?.numPages ?? 0;
   return (
     <div className={full ? "fixed inset-0 z-50 flex flex-col bg-slate-900 p-3" : "space-y-2"}>

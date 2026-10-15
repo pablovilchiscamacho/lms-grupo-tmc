@@ -81,12 +81,22 @@ export function UserForm({ org, initial = {}, mode, action, canInvite = true, on
           <div className="sm:col-span-3">
             <p className="label">¿Cómo recibirá su acceso?</p>
             <div className="grid gap-2 sm:grid-cols-2">
-              <AccessOption value="temp" current={access} onChange={setAccess} icon={<KeyRound className="size-4" />} title="Contraseña temporal"
-                text="Se muestra una sola vez para entregarla en persona. La cambiará al entrar." />
+              <AccessOption value="temp" current={access} onChange={setAccess} icon={<KeyRound className="size-4" />} title="Contraseña que define Capital Humano"
+                text="La escribes tú (o se crea una fácil) y se la entregas en persona." />
               <AccessOption value="invite" current={access} onChange={setAccess} disabled={!hasEmail || !canInvite} icon={<Mail className="size-4" />} title="Invitación por correo"
                 text={hasEmail ? "Recibe un enlace para definir su propia contraseña." : "Requiere correo corporativo."} />
             </div>
             <input type="hidden" name="access" value={access} />
+            {access === "temp" && (
+              <div className="mt-3 grid gap-3 sm:grid-cols-2 sm:items-end">
+                <Field label="Contraseña" htmlFor="password" error={fe.password} hint="Mínimo 6 caracteres. Vacía = se crea una como «Sol-4827».">
+                  <input id="password" name="password" className="input font-mono" autoComplete="off" placeholder="Opcional" />
+                </Field>
+                <label className="flex items-center gap-2 pb-2 text-sm text-slate-700">
+                  <input type="checkbox" name="ask_change" className="size-4" /> Pedir que la cambie al entrar
+                </label>
+              </div>
+            )}
           </div>
         )}
       </fieldset>
@@ -193,7 +203,7 @@ function Created({ result, onReset }: { result: CreateUserResult; onReset?: () =
   return (
     <div className="space-y-4">
       <Alert kind="success" title="Usuario creado">
-        {result.invited ? "Le enviamos un correo con un enlace para definir su contraseña." : "Entrega esta contraseña temporal en persona. Por seguridad no se volverá a mostrar."}
+        {result.invited ? "Le enviamos un correo con un enlace para definir su contraseña." : "Anota esta contraseña en tu control y entrégala en persona. No se volverá a mostrar."}
       </Alert>
       {result.tempPassword && (
         <div className="flex items-center gap-2">

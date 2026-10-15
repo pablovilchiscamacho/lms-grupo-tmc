@@ -1,6 +1,6 @@
 export const IMPORT_FIELDS = [
   "nombre", "apellido_paterno", "apellido_materno", "email", "numero_empleado", "usuario",
-  "empresa", "sucursal", "departamento", "puesto", "jefe", "telefono", "fecha_ingreso",
+  "empresa", "sucursal", "departamento", "puesto", "jefe", "telefono", "fecha_ingreso", "contrasena",
 ] as const;
 export type ImportField = (typeof IMPORT_FIELDS)[number];
 export type RawRow = Partial<Record<ImportField, string>>;
@@ -22,4 +22,5 @@ export const FIELD_TITLES: Record<ImportField, string> = {
   nombre: "Nombre", apellido_paterno: "Apellido paterno", apellido_materno: "Apellido materno", email: "Email",
   numero_empleado: "Número de empleado", usuario: "Usuario", empresa: "Empresa", sucursal: "Sucursal",
   departamento: "Departamento", puesto: "Puesto", jefe: "Jefe", telefono: "Teléfono", fecha_ingreso: "Fecha de ingreso",
+  contrasena: "Contraseña",
 };

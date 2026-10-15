@@ -10,7 +10,7 @@ export function SetPasswordForm() {
   return (
     <form action={action} className="mt-6 space-y-4" noValidate>
       {state && !state.ok && !state.error.fieldErrors && <Alert kind="error">{state.error.message}</Alert>}
-      <Field label="Nueva contraseña" htmlFor="password" error={fe.password} hint="Mínimo 10 caracteres, con letras y números.">
+      <Field label="Nueva contraseña" htmlFor="password" error={fe.password} hint="Mínimo 6 caracteres. Puede ser una palabra o un número que recuerdes.">
         <input id="password" name="password" type="password" className="input" autoComplete="new-password" required aria-invalid={!!fe.password} />
       </Field>
       <Field label="Confirmar contraseña" htmlFor="confirm" error={fe.confirm}>

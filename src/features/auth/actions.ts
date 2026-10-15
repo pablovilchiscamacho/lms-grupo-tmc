@@ -97,11 +97,7 @@ export async function requestPasswordReset(_: unknown, fd: FormData): Promise<Ac
 
 const passwordSchema = z
   .object({
-    password: z
-      .string()
-      .min(10, "Mínimo 10 caracteres")
-      .max(72, "Máximo 72 caracteres")
-      .refine((v) => /[A-Za-zÁÉÍÓÚáéíóúÑñ]/.test(v) && /\d/.test(v), "Usa letras y números"),
+    password: z.string().min(6, "Mínimo 6 caracteres").max(72, "Máximo 72 caracteres"),
     confirm: z.string(),
   })
   .refine((v) => v.password === v.confirm, { path: ["confirm"], message: "Las contraseñas no coinciden" });

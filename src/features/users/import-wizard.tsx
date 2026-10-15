@@ -35,6 +35,7 @@ export function ImportWizard() {
   const [editing, setEditing] = useState<Record<number, RawRow>>({});
   const [revalidating, setRevalidating] = useState(false);
   const [mode, setMode] = useState<"invite_or_temp" | "temp">("temp");
+  const [askChange, setAskChange] = useState(false);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const [results, setResults] = useState<ImportOutcome[] | null>(null);
   const [linkInfo, setLinkInfo] = useState<string | null>(null);
@@ -76,7 +77,7 @@ export function ImportWizard() {
     const all: ImportOutcome[] = [];
     setProgress({ done: 0, total: valid.length });
     for (let i = 0; i < valid.length; i += BATCH) {
-      const res = await importBatch(valid.slice(i, i + BATCH), mode);
+      const res = await importBatch(valid.slice(i, i + BATCH), mode, askChange);
       if (!res.ok) { setError(res.error.message); break; }
       all.push(...res.data!);
       setProgress({ done: Math.min(i + BATCH, valid.length), total: valid.length });
@@ -92,7 +93,7 @@ export function ImportWizard() {
 
   function downloadAccess() {
     if (!results) return;
-    const lines = [["Nombre", "Acceso", "Contraseña temporal"], ...results.filter((r) => r.ok && r.tempPassword).map((r) => [r.name, r.login ?? "", r.tempPassword!])];
+    const lines = [["Nombre", "Acceso", "Contraseña"], ...results.filter((r) => r.ok && r.tempPassword).map((r) => [r.name, r.login ?? "", r.tempPassword!])];
     const csv = "﻿" + lines.map((l) => l.map((c) => `"${c.replace(/"/g, '""')}"`).join(",")).join("\n");
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
@@ -111,9 +112,9 @@ export function ImportWizard() {
           {linkInfo && <> {linkInfo}</>}
         </Alert>
         {ok.some((r) => r.tempPassword) && (
-          <Card title="Contraseñas temporales">
-            <p className="mb-3 text-sm text-slate-600">Descarga el archivo y entrégalo de forma segura; no se podrá volver a consultar. Cada persona deberá cambiar su contraseña al entrar.</p>
-            <button className="btn-primary" onClick={downloadAccess}><Download className="size-4" /> Descargar accesos (CSV)</button>
+          <Card title="Contraseñas">
+            <p className="mb-3 text-sm text-slate-600">Descarga el archivo y guárdalo en tu control; no se podrá volver a consultar en la plataforma. Entrega a cada quien su contraseña en persona.</p>
+            <button className="btn-primary" onClick={downloadAccess}><Download className="size-4" /> Descargar accesos</button>
           </Card>
         )}
         {bad.length > 0 && (
@@ -221,9 +222,12 @@ export function ImportWizard() {
               <div>
                 <label htmlFor="mode" className="label">Acceso de los nuevos usuarios</label>
                 <select id="mode" className="input" value={mode} onChange={(e) => setMode(e.target.value as typeof mode)}>
-                  <option value="temp">Contraseña temporal para todos (descargas un archivo con los accesos)</option>
-                  <option value="invite_or_temp">Invitación por correo a quien tenga correo; temporal a los demás</option>
+                  <option value="temp">Capital Humano define las contraseñas (columna «Contraseña»; si va vacía se crea una fácil)</option>
+                  <option value="invite_or_temp">Invitación por correo a quien tenga correo; contraseña a los demás</option>
                 </select>
+                <label className="mt-2 flex items-center gap-2 text-sm text-slate-700">
+                  <input type="checkbox" className="size-4" checked={askChange} onChange={(e) => setAskChange(e.target.checked)} /> Pedir que cambien su contraseña al entrar
+                </label>
               </div>
               <button className="btn-primary" disabled={counts.valid === 0 || !!progress || Object.keys(editing).length > 0} onClick={runImport}>
                 {progress ? <><Loader2 className="size-4 animate-spin" /> Creando {progress.done} de {progress.total}…</> : `Importar ${counts.valid} usuario${counts.valid === 1 ? "" : "s"} válidos`}

@@ -1,9 +1,9 @@
 "use server";
-import { randomInt } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { chosenPassword, easyPassword } from "./passwords";
 import { must, safe, UserError, type ActionResult } from "@/lib/action";
 import { toFriendlyError } from "@/lib/errors";
 import { APP_URL } from "@/lib/env";
@@ -13,11 +13,6 @@ import { userFromForm, type UserInput } from "./schemas";
 const INTERNAL_DOMAIN = process.env.INTERNAL_EMAIL_DOMAIN ?? "users.lms.internal";
 
 /** Contraseña temporal legible (sin 0/O/1/l) para entregar en persona. */
-function tempPassword() {
-  const A = "ABCDEFGHJKMNPQRSTUVWXYZ", d = "23456789", all = A + d + "abcdefghjkmnpqrstuvwxyz";
-  const pick = (s: string) => s[randomInt(s.length)];
-  return `${pick(A)}${Array.from({ length: 4 }, () => pick(all)).join("")}-${pick(d)}${Array.from({ length: 4 }, () => pick(all)).join("")}`;
-}
 const syntheticEmail = () => `${crypto.randomUUID()}@${INTERNAL_DOMAIN}`;
 
 async function validate(payload: Record<string, unknown>, userId: string | null) {
@@ -60,14 +55,14 @@ export async function createUser(_: unknown, fd: FormData): Promise<ActionResult
       }
       authId = data.user.id;
     } else {
-      temp = tempPassword();
+      temp = chosenPassword(fd.get("password")) ?? easyPassword();
       const { data, error } = await admin.auth.admin.createUser({ email: String(payload.auth_email), password: temp, email_confirm: true });
       if (error || !data.user) {
         console.error("[createUser]", error);
         throw new UserError(error?.code === "email_exists" ? "Este correo ya está registrado." : "No se pudo crear el acceso del usuario.");
       }
       authId = data.user.id;
-      payload.must_change_password = true;
+      payload.must_change_password = fd.get("ask_change") === "on";
     }
 
     const created = await supabase.rpc("admin_create_user", { p_user_id: authId, p: payload });
@@ -138,7 +133,7 @@ export async function setUserStatus(userId: string, _: unknown, fd: FormData): P
 }
 
 /** Restablecer acceso: enlace por correo (si tiene correo real) o contraseña temporal que se muestra una sola vez. */
-export async function resetUserPassword(userId: string, mode: "link" | "temp"): Promise<ActionResult<{ tempPassword?: string }>> {
+export async function resetUserPassword(userId: string, mode: "link" | "temp", opts: { password?: string; askChange?: boolean } = {}): Promise<ActionResult<{ tempPassword?: string }>> {
   return safe(async () => {
     const supabase = await createClient();
     must(await supabase.rpc("admin_check_user_action", { p_user_id: userId, p_perm: "users.update" }));
@@ -154,10 +149,10 @@ export async function resetUserPassword(userId: string, mode: "link" | "temp"): 
       await admin.rpc("server_log", { p_actor: me?.claims?.sub ?? null, p_action: "user.password_reset", p_entity_type: "user", p_entity_id: userId, p_data: { mode } });
       return { ok: true, message: "Enviamos un enlace para restablecer la contraseña." };
     }
-    const temp = tempPassword();
+    const temp = chosenPassword(opts.password) ?? easyPassword();
     const r = await admin.auth.admin.updateUserById(userId, { password: temp });
-    if (r.error) throw new UserError("No se pudo asignar la contraseña temporal.");
-    await admin.rpc("server_mark_user", { p_user_id: userId, p_event: "password_reset_by_admin" });
+    if (r.error) throw new UserError(r.error.code === "weak_password" ? "Esa contraseña es demasiado débil para el sistema; prueba otra." : "No se pudo asignar la contraseña.");
+    await admin.rpc("server_mark_user", { p_user_id: userId, p_event: opts.askChange ? "password_reset_by_admin" : "password_set_by_admin" });
     await admin.rpc("server_log", { p_actor: me?.claims?.sub ?? null, p_action: "user.password_reset", p_entity_type: "user", p_entity_id: userId, p_data: { mode } });
     return { ok: true, data: { tempPassword: temp } };
   });

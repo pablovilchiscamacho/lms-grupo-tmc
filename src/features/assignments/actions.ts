@@ -29,15 +29,27 @@ export async function previewAssignment(a: AssignmentInput): Promise<ActionResul
 }
 
 export async function createAssignment(a: AssignmentInput): Promise<ActionResult> {
-  let id = "";
+  let res = { assignment_id: "", created: 0, merged: false };
   const r = await safe(async () => {
     const v = assignmentSchema.parse(a);
     const supabase = await createClient();
-    id = (must(await supabase.rpc("create_assignment", { p: v })) as { assignment_id: string }).assignment_id;
+    res = must(await supabase.rpc("create_assignment", { p: v })) as typeof res;
   });
   if (!r.ok) return r;
   revalidatePath("/admin/asignaciones");
-  redirect(`/admin/asignaciones/${id}?creada=1`);
+  // Personas específicas con las mismas condiciones se suman a la asignación que ya existía.
+  redirect(`/admin/asignaciones/${res.assignment_id}?${res.merged ? `sumadas=${res.created}` : "creada=1"}`);
+}
+
+/** «Agregar personas» a una asignación de personas específicas. */
+export async function addToAssignment(id: string, userIds: string[]): Promise<ActionResult<{ created: number; skipped: number }>> {
+  return safe(async () => {
+    const supabase = await createClient();
+    const r = must(await supabase.rpc("add_to_assignment", { p_assignment: z.string().uuid().parse(id), p_user_ids: z.array(z.string().uuid()).min(1).max(2000).parse(userIds) })) as { created: number; skipped: number };
+    revalidatePath(`/admin/asignaciones/${id}`);
+    revalidatePath("/admin/asignaciones");
+    return { ok: true, data: r };
+  });
 }
 
 export async function setAssignmentActive(id: string, active: boolean): Promise<ActionResult> {

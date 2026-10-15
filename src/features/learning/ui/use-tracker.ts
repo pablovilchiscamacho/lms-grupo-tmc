@@ -49,5 +49,8 @@ export function useLessonTracker(lessonId: string, onCompleted: () => void) {
     if (immediate && Date.now() - lastSent.current > 1500) beat();
   }, [beat]);
 
-  return { state, error, report };
+  /** El visor no pudo abrir el documento en este teléfono: el servidor la cuenta como vista (y lo registra). */
+  const viewerFailed = useCallback(async () => { handle(await trackLesson(lessonId, "viewer_failed")); }, [lessonId, handle]);
+
+  return { state, error, report, viewerFailed };
 }

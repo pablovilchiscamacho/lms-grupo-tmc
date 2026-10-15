@@ -57,12 +57,14 @@ export function AccessPanel({ userId, hasRealEmail, active }: { userId: string; 
   const [msg, setMsg] = useState<{ kind: "success" | "error"; text: string } | null>(null);
   const [temp, setTemp] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [password, setPassword] = useState("");
+  const [askChange, setAskChange] = useState(false);
   const run = (mode: "link" | "temp") =>
     start(async () => {
-      setMsg(null); setTemp(null);
-      const r = await resetUserPassword(userId, mode);
-      if (!r.ok) return setMsg({ kind: "error", text: r.error.message });
-      if (r.data?.tempPassword) setTemp(r.data.tempPassword);
+      setMsg(null); setTemp(null); setCopied(false);
+      const r = await resetUserPassword(userId, mode, { password, askChange });
+      if (!r.ok) return setMsg({ kind: "error", text: Object.values(r.error.fieldErrors ?? {})[0] ?? r.error.message });
+      if (r.data?.tempPassword) { setTemp(r.data.tempPassword); setPassword(""); }
       else setMsg({ kind: "success", text: r.message ?? "Listo." });
     });
   if (!active) return <p className="text-sm text-slate-500">Solo disponible para usuarios activos.</p>;
@@ -71,21 +73,27 @@ export function AccessPanel({ userId, hasRealEmail, active }: { userId: string; 
       {msg && <Alert kind={msg.kind}>{msg.text}</Alert>}
       {temp && (
         <div className="space-y-2">
-          <Alert kind="warning">Entrega esta contraseña en persona. No se volverá a mostrar y deberá cambiarla al entrar.</Alert>
+          <Alert kind="success">Contraseña asignada. Anótala en tu control y entrégala en persona; no se volverá a mostrar{askChange ? " y deberá cambiarla al entrar" : ""}.</Alert>
           <div className="flex gap-2">
             <code className="flex-1 rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 font-mono tracking-wider">{temp}</code>
-            <button className="btn-secondary" onClick={async () => { await navigator.clipboard.writeText(temp); setCopied(true); }}>
+            <button className="btn-secondary" onClick={async () => { try { await navigator.clipboard.writeText(temp); setCopied(true); } catch { /* sin portapapeles */ } }} aria-label="Copiar">
               {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
             </button>
           </div>
         </div>
       )}
-      {hasRealEmail && (
-        <button className="btn-secondary w-full" disabled={pending} onClick={() => run("link")}><Mail className="size-4" /> Enviar enlace de restablecimiento</button>
-      )}
-      <button className="btn-secondary w-full" disabled={pending} onClick={() => { if (confirm("¿Asignar una contraseña temporal? La actual dejará de funcionar.")) run("temp"); }}>
-        <KeyRound className="size-4" /> Asignar contraseña temporal
+      <Field label="Nueva contraseña" htmlFor="new-password" hint="Mínimo 6 caracteres. Si la dejas vacía se crea una fácil, como «Sol-4827».">
+        <input id="new-password" className="input font-mono" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="off" placeholder="Opcional" />
+      </Field>
+      <label className="flex items-center gap-2 text-sm text-slate-700">
+        <input type="checkbox" className="size-4" checked={askChange} onChange={(e) => setAskChange(e.target.checked)} /> Pedir que la cambie al entrar
+      </label>
+      <button className="btn-secondary w-full" disabled={pending} onClick={() => { if (confirm("¿Asignar esta contraseña? La actual dejará de funcionar.")) run("temp"); }}>
+        <KeyRound className="size-4" /> Asignar contraseña
       </button>
+      {hasRealEmail && (
+        <button className="btn-ghost w-full text-sm" disabled={pending} onClick={() => run("link")}><Mail className="size-4" /> O enviarle un enlace por correo</button>
+      )}
     </div>
   );
 }

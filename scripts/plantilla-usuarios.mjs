@@ -18,14 +18,15 @@ const COLS = [
   ["Jefe", "No", "Número de empleado o correo del jefe directo; puede venir en este mismo archivo.", "1001"],
   ["Teléfono", "No", "10 dígitos, sin espacios.", "4421234567"],
   ["Fecha de ingreso", "No", "dd/mm/aaaa", "15/01/2024"],
+  ["Contraseña", "No", "La que Capital Humano le asigna (mínimo 6 caracteres). Si va vacía, la plataforma crea una fácil.", "Sol-4827"],
 ];
-const TEXT_COLS = [4, 5, 6, 11, 12];   // se guardan como texto para no perder ceros a la izquierda
+const TEXT_COLS = [4, 5, 6, 11, 12, 14];   // se guardan como texto para no perder ceros a la izquierda
 
 const wb = new ExcelJS.Workbook();
 wb.creator = "Plataforma de capacitación · Grupo TMC";
 
 const ws = wb.addWorksheet("Personal", { views: [{ state: "frozen", ySplit: 1 }] });
-ws.columns = COLS.map(([h], i) => ({ header: h, width: [14, 18, 18, 30, 20, 16, 14, 16, 20, 22, 14, 14, 16][i] }));
+ws.columns = COLS.map(([h], i) => ({ header: h, width: [14, 18, 18, 30, 20, 16, 14, 16, 20, 22, 14, 14, 16, 16][i] }));
 ws.getRow(1).height = 22;
 ws.getRow(1).eachCell((c, n) => {
   c.font = { bold: true, color: { argb: "FFFFFFFF" } };
@@ -44,7 +45,8 @@ for (const t of [
   "1. Captura una persona por renglón en la hoja «Personal», debajo de los títulos. No cambies ni borres los títulos.",
   "2. Cada persona necesita al menos uno de estos tres para poder entrar: Email, Número de empleado o Usuario.",
   "3. La Empresa debe existir en la plataforma. Las sucursales, departamentos y puestos que no existan se crean solos al importar: escríbelos siempre igual (no importan mayúsculas ni acentos).",
-  "4. Guarda el archivo como Excel (.xlsx) y súbelo en Usuarios → Importar. Antes de crear a nadie, la plataforma revisa todo y marca los errores.",
+  "4. Contraseña: escribe la que le asignas a cada persona (mínimo 6 caracteres) o déjala vacía para que se cree una fácil. Al terminar podrás descargar la lista de accesos.",
+  "5. Guarda el archivo como Excel (.xlsx) y súbelo en Usuarios → Importar. Antes de crear a nadie, la plataforma revisa todo y marca los errores.",
 ]) ins.addRow([t]);
 ins.addRow([]);
 const head = ins.addRow(["Columna", "¿Obligatoria?", "Qué poner", "Ejemplo"]);

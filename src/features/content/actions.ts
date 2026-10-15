@@ -142,9 +142,11 @@ export async function pollConversion(fileId: string): Promise<ActionResult<{ sta
 
 // ─────────────────────────────── Estructura del curso ───────────────────────────────
 
+// Presentaciones y documentos se completan «Al abrirlos» (así lo pidió Capital Humano: el examen se habilita al abrir
+// la presentación). En cada lección se puede cambiar a «Ver todas las páginas».
 const RULE_BY_EXT: Record<string, { type: string; rule: string }> = {
-  pdf: { type: "pdf", rule: "all_pages" }, ppt: { type: "presentation", rule: "all_pages" }, pptx: { type: "presentation", rule: "all_pages" },
-  doc: { type: "document", rule: "all_pages" }, docx: { type: "document", rule: "all_pages" },
+  pdf: { type: "pdf", rule: "on_view" }, ppt: { type: "presentation", rule: "on_view" }, pptx: { type: "presentation", rule: "on_view" },
+  doc: { type: "document", rule: "on_view" }, docx: { type: "document", rule: "on_view" },
   xls: { type: "spreadsheet", rule: "manual" }, xlsx: { type: "spreadsheet", rule: "manual" },
   mp4: { type: "video", rule: "video_percent" }, jpg: { type: "image", rule: "on_view" }, jpeg: { type: "image", rule: "on_view" },
   png: { type: "image", rule: "on_view" }, webp: { type: "image", rule: "on_view" },

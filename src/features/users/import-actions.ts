@@ -1,6 +1,5 @@
 "use server";
 import ExcelJS from "exceljs";
-import { randomInt } from "node:crypto";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -9,6 +8,7 @@ import { toFriendlyError } from "@/lib/errors";
 import { APP_URL } from "@/lib/env";
 import { norm } from "@/lib/format";
 
+import { easyPassword, PASSWORD_MIN } from "./passwords";
 import { type ImportField, type CheckedRow, type ImportOutcome, type NewOrg, type RawRow } from "./import-shared";
 
 /** Encabezados aceptados (sin acentos ni mayúsculas) → campo. */
@@ -21,6 +21,7 @@ const HEADER_MAP: Record<string, ImportField> = {
   usuario: "usuario", empresa: "empresa", sucursal: "sucursal", departamento: "departamento", area: "departamento",
   puesto: "puesto", jefe: "jefe", "jefe directo": "jefe", telefono: "telefono", celular: "telefono",
   "fecha de ingreso": "fecha_ingreso", ingreso: "fecha_ingreso", "fecha ingreso": "fecha_ingreso",
+  contrasena: "contrasena", "contrasena temporal": "contrasena", password: "contrasena", clave: "contrasena",
 };
 
 function parseCsv(text: string): string[][] {
@@ -96,10 +97,17 @@ async function readRows(file: File): Promise<RawRow[]> {
     });
 }
 
+/** La contraseña no viaja a la base de datos para validar ni crear estructura: solo se usa al crear la cuenta. */
+const withoutPassword = (r: RawRow): RawRow => { const c = { ...r }; delete c.contrasena; return c; };
+
 async function check(rows: RawRow[]): Promise<CheckedRow[]> {
   const supabase = await createClient();
-  const res = must(await supabase.rpc("admin_validate_import", { p_rows: rows }));
-  return (res as Omit<CheckedRow, "raw">[]).map((r, i) => ({ ...r, raw: rows[i] }));
+  const res = must(await supabase.rpc("admin_validate_import", { p_rows: rows.map(withoutPassword) }));
+  return (res as Omit<CheckedRow, "raw">[]).map((r, i) => {
+    const pw = rows[i].contrasena?.trim();
+    if (pw && pw.length < PASSWORD_MIN) return { ...r, status: "error", errors: [...r.errors, `Contraseña muy corta (mínimo ${PASSWORD_MIN} caracteres)`], raw: rows[i] };
+    return { ...r, raw: rows[i] };
+  });
 }
 
 const MAX_BYTES = 5 * 1024 * 1024;
@@ -123,14 +131,9 @@ export async function revalidateImport(rows: RawRow[]): Promise<ActionResult<Che
   return safe(async () => ({ ok: true, data: await check(rawSchema.parse(rows) as RawRow[]) }));
 }
 
-function tempPassword() {
-  const A = "ABCDEFGHJKMNPQRSTUVWXYZ", d = "23456789", all = A + d + "abcdefghjkmnpqrstuvwxyz";
-  const pick = (s: string) => s[randomInt(s.length)];
-  return `${pick(A)}${Array.from({ length: 4 }, () => pick(all)).join("")}-${pick(d)}${Array.from({ length: 4 }, () => pick(all)).join("")}`;
-}
 
 /** Paso 3: crear un lote (≤ 25) de filas ya validadas. Cada fila se revalida en la base al crearla. */
-export async function importBatch(rows: CheckedRow[], mode: "invite_or_temp" | "temp"): Promise<ActionResult<ImportOutcome[]>> {
+export async function importBatch(rows: CheckedRow[], mode: "invite_or_temp" | "temp", askChange = false): Promise<ActionResult<ImportOutcome[]>> {
   return safe(async () => {
     if (rows.length > 25) throw new UserError("Lote demasiado grande.");
     const supabase = await createClient();
@@ -152,12 +155,13 @@ export async function importBatch(rows: CheckedRow[], mode: "invite_or_temp" | "
           if (error || !data.user) throw new UserError("No se pudo enviar la invitación");
           authId = data.user.id;
         } else {
-          temp = tempPassword();
+          const pw = r.raw.contrasena?.trim();
+          temp = pw && pw.length >= PASSWORD_MIN ? pw : easyPassword();
           const { data, error } = await admin.auth.admin.createUser({ email: authEmail, password: temp, email_confirm: true });
           if (error || !data.user) throw new UserError(error?.code === "email_exists" ? "Correo ya registrado" : "No se pudo crear el acceso");
           authId = data.user.id;
         }
-        const payload = { ...d, manager_id: d.manager_id ?? null, auth_email: authEmail, has_real_email: !!email, must_change_password: !invite, via_import: true };
+        const payload = { ...d, manager_id: d.manager_id ?? null, auth_email: authEmail, has_real_email: !!email, must_change_password: !invite && askChange, via_import: true };
         const created = await supabase.rpc("admin_create_user", { p_user_id: authId, p: payload });
         if (created.error) throw created.error;
         out.push({ row: r.row, ok: true, id: authId, name, login: email ?? d.username ?? d.employee_number ?? undefined, tempPassword: temp, invited: invite, manager_ref: r.manager_ref });
@@ -179,7 +183,7 @@ export async function importBatch(rows: CheckedRow[], mode: "invite_or_temp" | "
 export async function createImportOrg(rows: RawRow[]): Promise<ActionResult<Record<NewOrg["kind"], string[]>>> {
   return safe(async () => {
     const supabase = await createClient();
-    const made = must(await supabase.rpc("admin_import_create_org", { p_rows: rawSchema.parse(rows) }));
+    const made = must(await supabase.rpc("admin_import_create_org", { p_rows: (rawSchema.parse(rows) as RawRow[]).map(withoutPassword) }));
     return { ok: true, data: made as Record<NewOrg["kind"], string[]> };
   });
 }

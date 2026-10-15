@@ -6,6 +6,7 @@ import { requirePermission, can } from "@/lib/auth/session";
 import { enrollmentsFor, examsByVersion, getAssignment } from "@/features/assignments/queries";
 import { EnrollmentTable } from "@/features/assignments/ui/enrollment-table";
 import { AssignmentToggle } from "@/features/assignments/ui/assignment-toggle";
+import { AddPeople } from "@/features/assignments/ui/add-people";
 import { fmtDate, REQUIREMENT_LABEL } from "@/lib/format";
 import { Alert, Card, PageHeader, Stat } from "@/components/ui";
 import { audienceLabel } from "@/features/assignments/format";
@@ -29,12 +30,14 @@ export default async function AssignmentPage({ params, searchParams }: PageProps
       <PageHeader title={a.course?.title ?? "Asignación"} description={`${audienceLabel(a)} · ${REQUIREMENT_LABEL[a.requirement]} · ${a.due_in_days ? `${a.due_in_days} días para terminarlo` : a.due_at ? `vence el ${fmtDate(a.due_at)}` : "sin fecha límite"}`}
         actions={can(ctx, "assignments.write") ? <AssignmentToggle id={a.id} active={a.is_active} future={a.include_future_users} /> : undefined} />
       {sp.creada && <div className="mb-4"><Alert kind="success">Asignación creada. Cada persona ya ve el curso en «Mis cursos» y recibió un aviso.</Alert></div>}
+      {typeof sp.sumadas === "string" && <div className="mb-4"><Alert kind="success">Ya existía una asignación de este curso con las mismas fechas: se sumaron {sp.sumadas} persona{sp.sumadas === "1" ? "" : "s"} a ella, sin crear otra.</Alert></div>}
       <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat label="Personas" value={active.length} />
         <Stat label="Terminaron" value={done} tone="green" hint={active.length ? `${Math.round((done / active.length) * 100)}%` : undefined} />
         <Stat label="Vencidos" value={overdue} tone={overdue ? "amber" : undefined} />
         <Stat label="Automática" value={a.include_future_users ? "Sí" : "No"} hint={a.include_future_users ? "Incluye a quienes entren después" : undefined} />
       </div>
+      {a.mode === "direct" && a.is_active && can(ctx, "assignments.write") && <div className="mb-4"><AddPeople assignmentId={a.id} /></div>}
       <Card title="Personas"><EnrollmentTable rows={rows} exams={exams} canAdjust={can(ctx, "enrollments.adjust")} revalidate={`/admin/asignaciones/${id}`} show={{ user: true }} /></Card>
     </>
   );

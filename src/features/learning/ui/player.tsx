@@ -30,7 +30,7 @@ export function PlayerView({ player, lessonId }: { player: Player; lessonId: str
   const [prevLesson, setPrevLesson] = useState(lessonId);
   if (prevLesson !== lessonId) { setPrevLesson(lessonId); setDone(lesson.status === "completed"); }
   const onCompleted = () => { setDone(true); router.refresh(); };
-  const { state, error, report } = useLessonTracker(lesson.id, onCompleted);
+  const { state, error, report, viewerFailed } = useLessonTracker(lesson.id, onCompleted);
   const [pending, start] = useTransition();
   const [actionError, setActionError] = useState<string | null>(null);
   const nextLocked = next && player.sequential && lesson.is_required && !done;
@@ -118,7 +118,7 @@ export function PlayerView({ player, lessonId }: { player: Player; lessonId: str
         {(error || actionError) && <Alert kind="error">{error ?? actionError}</Alert>}
 
         <div className="space-y-4">
-          {lesson.contents.map((c) => <ContentView key={c.id} content={c} lesson={lesson} report={report} />)}
+          {lesson.contents.map((c) => <ContentView key={c.id} content={c} lesson={lesson} report={report} onViewerFail={viewerFailed} />)}
         </div>
 
         {lesson.completion_rule === "all_pages" && !done && state && (
@@ -149,7 +149,9 @@ export function PlayerView({ player, lessonId }: { player: Player; lessonId: str
   );
 }
 
-function ContentView({ content: c, lesson, report }: { content: PlayerContent; lesson: PlayerLesson; report: ReturnType<typeof useLessonTracker>["report"] }) {
+function ContentView({ content: c, lesson, report, onViewerFail }: {
+  content: PlayerContent; lesson: PlayerLesson; report: ReturnType<typeof useLessonTracker>["report"]; onViewerFail: () => void;
+}) {
   const onPage = useCallback((page: number) => report({ page, resume: { page } }, true), [report]);
   const pdfId = c.type === "pdf" ? c.file?.id : c.pdf?.id;
 
@@ -160,7 +162,7 @@ function ContentView({ content: c, lesson, report }: { content: PlayerContent; l
   if (pdfId) {
     return (
       <div className="space-y-2">
-        <PdfViewer fileId={pdfId} startPage={Number(lesson.resume?.page ?? 1)} onPage={onPage} />
+        <PdfViewer fileId={pdfId} startPage={Number(lesson.resume?.page ?? 1)} onPage={onPage} onFail={onViewerFail} />
         {c.file && c.file.extension !== "pdf" && (
           <a href={`/api/files/${c.file.id}?dl=1`} className="inline-flex items-center gap-1 text-xs text-brand-700 hover:underline"><Download className="size-3.5" /> Descargar el original ({c.file.original_name})</a>
         )}

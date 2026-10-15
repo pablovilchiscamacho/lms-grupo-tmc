@@ -14,7 +14,7 @@ const dataSchema = z.object({
 export type TrackResult = { status: string; seconds: number; video_pct: number; pages: number; pages_list: number[] };
 
 /** Apertura y "latidos" de una lección. El servidor decide cuánto tiempo y avance cuenta. */
-export async function trackLesson(lessonId: string, event: "open" | "heartbeat", data: z.infer<typeof dataSchema> = {}): Promise<ActionResult<TrackResult>> {
+export async function trackLesson(lessonId: string, event: "open" | "heartbeat" | "viewer_failed", data: z.infer<typeof dataSchema> = {}): Promise<ActionResult<TrackResult>> {
   return safe(async () => {
     uuid.parse(lessonId);
     const supabase = await createClient();

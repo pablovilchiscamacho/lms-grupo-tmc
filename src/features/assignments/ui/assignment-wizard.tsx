@@ -80,7 +80,15 @@ export function AssignmentWizard({ courses, org, initialCourse }: {
               <span>También a quienes entren o cambien a esta área después<span className="block text-xs text-slate-500">Ejemplo: todo nuevo Operador de TMC recibirá el curso automáticamente al darlo de alta.</span></span>
             </label>
           </div>
-        ) : <PeoplePicker people={people} setPeople={(p) => { setPeople(p); setPreview(null); }} />}
+        ) : (
+          <div className="space-y-3">
+            <p className="rounded-lg bg-brand-50 p-3 text-xs text-brand-800">
+              ¿Es para todo un puesto o área (por ejemplo, todos los operadores)? Mejor usa «Por área o puesto»: los nuevos lo reciben solos.
+              Si ya asignaste este curso a personas específicas con las mismas fechas, estas personas se suman a esa misma asignación.
+            </p>
+            <PeoplePicker people={people} setPeople={(p) => { setPeople(p); setPreview(null); }} />
+          </div>
+        )}
       </Card>
 
       <Card title="3. Fechas">
@@ -120,7 +128,7 @@ export function AssignmentWizard({ courses, org, initialCourse }: {
   );
 }
 
-function PeoplePicker({ people, setPeople }: { people: Person[]; setPeople: (p: Person[]) => void }) {
+export function PeoplePicker({ people, setPeople }: { people: Person[]; setPeople: (p: Person[]) => void }) {
   const [q, setQ] = useState("");
   const [results, setResults] = useState<Person[]>([]);
   const [pending, start] = useTransition();
