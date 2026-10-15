@@ -85,6 +85,11 @@ export async function requestPasswordReset(_: unknown, fd: FormData): Promise<Ac
     const { data: resolved } = await admin.rpc("resolve_login", { p_identifier: email });
     const target = resolved as { auth_email: string; status: string } | null;
     // Solo se envía a cuentas activas con correo real (el correo técnico nunca recibe mensajes).
+    // Sin correo encendido el enlace no llegaría (la página ya indica acudir a Capital Humano).
+    const { data: mail } = await createAdminClient().from("settings").select("value").eq("key", "email").is("company_id", null).maybeSingle();
+    if (!(mail?.value as { enabled?: boolean } | undefined)?.enabled) {
+      return { ok: false, error: { code: "EMAIL_OFF", message: "Por ahora no se envían correos. Acude a Capital Humano para que te asigne una contraseña nueva." } };
+    }
     if (target && target.status === "active" && target.auth_email === email) {
       const supabase = await createClient();
       await supabase.auth.resetPasswordForEmail(email, {
