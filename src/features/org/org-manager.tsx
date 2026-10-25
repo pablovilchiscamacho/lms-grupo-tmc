@@ -2,7 +2,7 @@
 import { useActionState, useState, useTransition } from "react";
 import { Pencil, Plus } from "lucide-react";
 import { Alert, Badge, EmptyState, Field } from "@/components/ui";
-import { Modal, SubmitButton } from "@/components/ui/client";
+import { Modal, SubmitButton, KeepForm } from "@/components/ui/client";
 import { saveOrgItem, setOrgItemActive, type OrgTable } from "./actions";
 import type { OrgOptions } from "./queries";
 
@@ -115,7 +115,7 @@ function ItemForm({ table, item, fields, title, defaultCompany, onClose }: {
   const fe = state && !state.ok ? state.error.fieldErrors ?? {} : {};
   return (
     <Modal open onOpenChange={(v) => !v && onClose()} title={title}>
-      <form action={action} className="space-y-3">
+      <KeepForm action={action} state={state} className="space-y-3">
         {state && !state.ok && !state.error.fieldErrors && <Alert kind="error">{state.error.message}</Alert>}
         {fields.filter((f) => !(f.onlyCreate && item)).map((f) => (
           <Field key={f.name} label={f.label} htmlFor={f.name} error={fe[f.name]} hint={f.hint} required={f.required}>
@@ -134,7 +134,7 @@ function ItemForm({ table, item, fields, title, defaultCompany, onClose }: {
           <button type="button" className="btn-ghost" onClick={onClose}>Cancelar</button>
           <SubmitButton pendingText="Guardando…">Guardar</SubmitButton>
         </div>
-      </form>
+      </KeepForm>
     </Modal>
   );
 }

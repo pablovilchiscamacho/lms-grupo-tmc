@@ -4,7 +4,7 @@ import { useActionState, useMemo, useState } from "react";
 import { AlertTriangle, CheckCircle2, Download, FileSpreadsheet, Loader2, RefreshCw, XCircle } from "lucide-react";
 import clsx from "clsx";
 import { Alert, Badge, Card } from "@/components/ui";
-import { SubmitButton } from "@/components/ui/client";
+import { SubmitButton, KeepForm } from "@/components/ui/client";
 import { createImportOrg, importBatch, linkImportedManagers, previewImport, revalidateImport } from "./import-actions";
 import { FIELD_TITLES, IMPORT_FIELDS, ORG_KIND, type CheckedRow, type ImportOutcome, type NewOrg, type RawRow } from "./import-shared";
 
@@ -130,14 +130,14 @@ export function ImportWizard() {
   return (
     <div className="space-y-4">
       <Card>
-        <form action={action} className="flex flex-col gap-3 sm:flex-row sm:items-end">
+        <KeepForm action={action} state={state} className="flex flex-col gap-3 sm:flex-row sm:items-end">
           <div className="flex-1">
             <label htmlFor="file" className="label">Archivo Excel (.xlsx) o CSV</label>
             <input id="file" name="file" type="file" accept=".xlsx,.csv" required className="input file:mr-3 file:rounded-md file:border-0 file:bg-brand-50 file:px-3 file:py-1 file:text-sm file:font-medium file:text-brand-800" />
           </div>
           <SubmitButton className="btn-primary" pendingText="Validando…"><FileSpreadsheet className="size-4" /> Validar archivo</SubmitButton>
           <a href="/plantillas/usuarios.xlsx" download className="btn-ghost"><Download className="size-4" /> Plantilla</a>
-        </form>
+        </KeepForm>
         {state && !state.ok && <div className="mt-3"><Alert kind="error">{state.error.message}</Alert></div>}
       </Card>
 

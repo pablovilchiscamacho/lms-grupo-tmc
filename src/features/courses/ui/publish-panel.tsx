@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { AlertTriangle, CheckCircle2, Copy, Loader2, Rocket, Users } from "lucide-react";
 import type { OrgOptions } from "@/features/org/queries";
 import { Alert, Card, Field } from "@/components/ui";
-import { Modal, SubmitButton } from "@/components/ui/client";
+import { Modal, SubmitButton, KeepForm } from "@/components/ui/client";
 import {
   deleteCourse, duplicateCourse, publishCourse, setCourseStatus, updateVersionSettings,
 } from "../actions";
@@ -157,11 +157,11 @@ function DuplicateForm({ courseId, code, title }: { courseId: string; code: stri
   const [state, action] = useActionState(duplicateCourse.bind(null, courseId), null);
   const fe = state && !state.ok ? state.error.fieldErrors ?? {} : {};
   return (
-    <form action={action} className="space-y-3">
+    <KeepForm action={action} state={state} className="space-y-3">
       {state && !state.ok && !state.error.fieldErrors && <Alert kind="error">{state.error.message}</Alert>}
       <Field label="Clave del curso nuevo" htmlFor="dup-code" error={fe.code} required><input id="dup-code" name="code" defaultValue={`${code}-2`} className="input uppercase" /></Field>
       <Field label="Nombre" htmlFor="dup-title" error={fe.title} required><input id="dup-title" name="title" defaultValue={`${title} (copia)`} className="input" /></Field>
       <div className="flex justify-end"><SubmitButton pendingText="Duplicando…">Duplicar</SubmitButton></div>
-    </form>
+    </KeepForm>
   );
 }

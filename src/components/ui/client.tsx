@@ -2,12 +2,41 @@
 import clsx from "clsx";
 import { useFormStatus } from "react-dom";
 import { Loader2 } from "lucide-react";
-import type { ReactNode } from "react";
+import { createContext, startTransition, useContext, useEffect, useRef, useState, type FormHTMLAttributes, type ReactNode } from "react";
 import { Dialog as D } from "radix-ui";
 import { X } from "lucide-react";
 
+const KeepPending = createContext(false);
+
+/**
+ * Formulario que NO borra lo capturado al enviar. React 19 limpia los campos de un <form action={...}> cada vez que se
+ * envía, aunque el servidor responda con error: la persona tenía que capturar todo otra vez. Aquí el envío se hace
+ * en una transición y los campos solo se limpian si la respuesta fue correcta (state.ok).
+ */
+export function KeepForm({ action, state, children, ...rest }: Omit<FormHTMLAttributes<HTMLFormElement>, "action" | "onSubmit"> & {
+  action: (fd: FormData) => void; state?: { ok: boolean } | null; children: ReactNode;
+}) {
+  const ref = useRef<HTMLFormElement>(null);
+  // «Enviando» mientras la respuesta (state) siga siendo la misma que había al enviar.
+  const [sentWith, setSentWith] = useState<{ s: unknown } | null>(null);
+  const pending = sentWith !== null && sentWith.s === state;
+  useEffect(() => { if (state?.ok) ref.current?.reset(); }, [state]);
+  return (
+    <form {...rest} ref={ref} onSubmit={(e) => {
+      e.preventDefault();
+      const fd = new FormData(e.currentTarget, (e.nativeEvent as SubmitEvent).submitter);
+      setSentWith({ s: state });
+      startTransition(() => action(fd));
+    }}>
+      <KeepPending.Provider value={pending}>{children}</KeepPending.Provider>
+    </form>
+  );
+}
+
 export function SubmitButton({ children, className = "btn-primary", pendingText }: { children: ReactNode; className?: string; pendingText?: string }) {
-  const { pending } = useFormStatus();
+  const status = useFormStatus();
+  const kept = useContext(KeepPending);
+  const pending = status.pending || kept;
   return (
     <button type="submit" className={className} disabled={pending} aria-busy={pending}>
       {pending && <Loader2 className="size-4 animate-spin" aria-hidden />}

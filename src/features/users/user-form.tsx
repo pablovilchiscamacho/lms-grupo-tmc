@@ -5,7 +5,7 @@ import { Check, Copy, KeyRound, Mail } from "lucide-react";
 import type { ActionResult } from "@/lib/action";
 import type { OrgOptions } from "@/features/org/queries";
 import { Alert, Field } from "@/components/ui";
-import { SubmitButton } from "@/components/ui/client";
+import { SubmitButton, KeepForm } from "@/components/ui/client";
 import { searchPeople, type CreateUserResult } from "./actions";
 
 export type UserFormValues = {
@@ -35,7 +35,7 @@ export function UserForm({ org, initial = {}, mode, action, canInvite = true, on
   const inp = (name: keyof typeof fe | string) => ({ id: name, name, "aria-invalid": !!fe[name], "aria-describedby": fe[name] ? `${name}-error` : undefined });
 
   return (
-    <form action={formAction} className="space-y-6" noValidate>
+    <KeepForm action={formAction} state={state} className="space-y-6" noValidate>
       {state && !state.ok && <Alert kind="error">{state.error.message}</Alert>}
       {state?.ok && state.message && <Alert kind="success">{state.message}</Alert>}
 
@@ -74,9 +74,14 @@ export function UserForm({ org, initial = {}, mode, action, canInvite = true, on
             <input {...inp("email")} type="email" defaultValue={initial.email ?? ""} className="input" autoComplete="off" />
           </Field>
         )}
-        <Field label="Usuario (opcional)" htmlFor="username" error={fe.username} hint={hasEmail ? undefined : "Para entrar sin correo: usuario o número de empleado."}>
-          <input {...inp("username")} defaultValue={initial.username ?? ""} className="input" autoComplete="off" placeholder="ej. juan.perez" />
-        </Field>
+        {/* Con correo entra con el correo: el usuario solo hace falta sin correo (o si ya tenía uno).
+            El campo no se llama «username» para que el navegador no le autocomplete el correo de quien está capturando. */}
+        {(!hasEmail || initial.username) && (
+          <Field label="Usuario (opcional)" htmlFor="alias_acceso" error={fe.username} hint="Para entrar sin correo: usuario o número de empleado. Ej. juan.perez">
+            <input id="alias_acceso" name="alias_acceso" aria-invalid={!!fe.username} defaultValue={initial.username ?? ""} className="input"
+              autoComplete="off" data-1p-ignore data-lpignore="true" data-form-type="other" placeholder="ej. juan.perez" />
+          </Field>
+        )}
         {mode === "create" && (
           <div className="sm:col-span-3">
             <p className="label">¿Cómo recibirá su acceso?</p>
@@ -90,7 +95,7 @@ export function UserForm({ org, initial = {}, mode, action, canInvite = true, on
             {access === "temp" && (
               <div className="mt-3 grid gap-3 sm:grid-cols-2 sm:items-end">
                 <Field label="Contraseña" htmlFor="password" error={fe.password} hint="Mínimo 6 caracteres. Vacía = se crea una como «Sol-4827».">
-                  <input id="password" name="password" className="input font-mono" autoComplete="off" placeholder="Opcional" />
+                  <input id="password" name="password" className="input font-mono" autoComplete="new-password" data-1p-ignore data-lpignore="true" data-form-type="other" placeholder="Opcional" />
                 </Field>
                 <label className="flex items-center gap-2 pb-2 text-sm text-slate-700">
                   <input type="checkbox" name="ask_change" className="size-4" /> Pedir que la cambie al entrar
@@ -136,7 +141,7 @@ export function UserForm({ org, initial = {}, mode, action, canInvite = true, on
         <Link href="/admin/usuarios" className="btn-ghost">Cancelar</Link>
         <SubmitButton pendingText="Guardando…">{mode === "create" ? "Crear usuario" : "Guardar cambios"}</SubmitButton>
       </div>
-    </form>
+    </KeepForm>
   );
 }
 

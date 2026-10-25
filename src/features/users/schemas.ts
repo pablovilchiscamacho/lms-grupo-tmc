@@ -13,8 +13,12 @@ export const userSchema = z.object({
     .refine((v) => v == null || z.email().safeParse(v).success, "Correo inválido"),
   employee_number: z.string().trim().max(30).transform((v) => (v === "" ? null : v)).nullable()
     .refine((v) => v == null || /^[A-Za-z0-9_-]{1,30}$/.test(v), "Solo letras, números, - y _"),
-  username: z.string().trim().toLowerCase().max(40).transform((v) => (v === "" ? null : v)).nullable()
-    .refine((v) => v == null || /^[a-z0-9._-]{3,40}$/.test(v), "3 a 40 caracteres: letras, números, punto, guion"),
+  // «Juan Pérez» → «juan.perez» (sin acentos, espacios como punto).
+  username: z.string().trim().max(60)
+    .transform((v) => v.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, "."))
+    .transform((v) => (v === "" ? null : v)).nullable()
+    .refine((v) => v == null || !v.includes("@"), "El usuario no es un correo. Si tiene correo, escríbelo en «Correo corporativo».")
+    .refine((v) => v == null || v.includes("@") || /^[a-z0-9._-]{3,40}$/.test(v), "3 a 40 caracteres: letras, números, punto o guion (ej. juan.perez)"),
   phone: z.string().trim().max(20).transform((v) => (v === "" ? null : v)).nullable()
     .refine((v) => v == null || /^[0-9 +()-]{7,20}$/.test(v), "Teléfono inválido"),
   company_id: z.string().uuid("Elige la empresa"),
@@ -36,7 +40,7 @@ export function userFromForm(fd: FormData) {
   return userSchema.parse({
     first_name: s("first_name"), last_name_paternal: s("last_name_paternal"), last_name_maternal: s("last_name_maternal"),
     has_real_email: fd.get("has_real_email") === "on", email: s("email"), employee_number: s("employee_number"),
-    username: s("username"), phone: s("phone"), company_id: s("company_id"), branch_id: s("branch_id"),
+    username: s("alias_acceso") || s("username"), phone: s("phone"), company_id: s("company_id"), branch_id: s("branch_id"),
     department_id: s("department_id"), position_id: s("position_id"), manager_id: s("manager_id"), hire_date: s("hire_date"),
   });
 }

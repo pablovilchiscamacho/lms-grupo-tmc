@@ -2,7 +2,7 @@
 import { useActionState, useState, useTransition } from "react";
 import { Check, Copy, KeyRound, Mail, Trash2 } from "lucide-react";
 import { Alert, Badge, Field } from "@/components/ui";
-import { Modal, SubmitButton } from "@/components/ui/client";
+import { Modal, SubmitButton, KeepForm } from "@/components/ui/client";
 import type { OrgOptions } from "@/features/org/queries";
 import { grantRole, resetUserPassword, revokeRole, setUserStatus } from "./actions";
 import type { UserRoleRow } from "./queries";
@@ -28,7 +28,7 @@ export function StatusPanel({ userId, status }: { userId: string; status: string
       {state?.ok && <div className="mb-3"><Alert kind="success">{state.message}</Alert></div>}
       <button className="btn-secondary w-full" onClick={() => setOpen(true)}>Cambiar estado</button>
       <Modal open={open} onOpenChange={setOpen} title="Cambiar estado" description="El cambio queda registrado en la bitácora con el motivo.">
-        <form action={action} className="space-y-4">
+        <KeepForm action={action} state={state} className="space-y-4">
           {state && !state.ok && !state.error.fieldErrors && <Alert kind="error">{state.error.message}</Alert>}
           <fieldset className="space-y-2">
             <legend className="label">Nuevo estado</legend>
@@ -46,7 +46,7 @@ export function StatusPanel({ userId, status }: { userId: string; status: string
             <button type="button" className="btn-ghost" onClick={() => setOpen(false)}>Cancelar</button>
             <SubmitButton pendingText="Guardando…">Confirmar cambio</SubmitButton>
           </div>
-        </form>
+        </KeepForm>
       </Modal>
     </>
   );
@@ -83,7 +83,7 @@ export function AccessPanel({ userId, hasRealEmail, active }: { userId: string; 
         </div>
       )}
       <Field label="Nueva contraseña" htmlFor="new-password" hint="Mínimo 6 caracteres. Si la dejas vacía se crea una fácil, como «Sol-4827».">
-        <input id="new-password" className="input font-mono" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="off" placeholder="Opcional" />
+        <input id="new-password" className="input font-mono" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" data-1p-ignore data-lpignore="true" data-form-type="other" placeholder="Opcional" />
       </Field>
       <label className="flex items-center gap-2 text-sm text-slate-700">
         <input type="checkbox" className="size-4" checked={askChange} onChange={(e) => setAskChange(e.target.checked)} /> Pedir que la cambie al entrar
@@ -151,7 +151,7 @@ export function RolesPanel({ userId, roles, allRoles, org, canAssign }: {
       {canAssign && <button className="btn-secondary w-full" onClick={() => setOpen(true)}>Asignar rol</button>}
       {state?.ok && <Badge tone="green">{state.message}</Badge>}
       <Modal open={open} onOpenChange={setOpen} title="Asignar rol" description="El alcance define sobre qué personas aplica el rol.">
-        <form action={action} className="space-y-4">
+        <KeepForm action={action} state={state} className="space-y-4">
           {state && !state.ok && !state.error.fieldErrors && <Alert kind="error">{state.error.message}</Alert>}
           <Field label="Rol" htmlFor="role" required>
             <select id="role" name="role" className="input" required>
@@ -178,7 +178,7 @@ export function RolesPanel({ userId, roles, allRoles, org, canAssign }: {
             <button type="button" className="btn-ghost" onClick={() => setOpen(false)}>Cancelar</button>
             <SubmitButton pendingText="Asignando…">Asignar</SubmitButton>
           </div>
-        </form>
+        </KeepForm>
       </Modal>
     </div>
   );

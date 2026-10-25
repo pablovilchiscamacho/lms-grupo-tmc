@@ -3,14 +3,14 @@ import Link from "next/link";
 import { useActionState, useState } from "react";
 import { signIn } from "@/features/auth/actions";
 import { Alert, Field } from "@/components/ui";
-import { SubmitButton } from "@/components/ui/client";
+import { SubmitButton, KeepForm } from "@/components/ui/client";
 
 export function SignInForm({ next }: { next: string }) {
   const [state, action] = useActionState(signIn, null);
   const [identifier, setIdentifier] = useState(""); // controlado: no se borra si la contraseña es incorrecta
   const fe = state && !state.ok ? state.error.fieldErrors ?? {} : {};
   return (
-    <form action={action} className="mt-6 space-y-4" noValidate>
+    <KeepForm action={action} state={state} className="mt-6 space-y-4" noValidate>
       <input type="hidden" name="next" value={next} />
       {state && !state.ok && !state.error.fieldErrors && <Alert kind="error">{state.error.message}</Alert>}
       <Field label="Correo o número de empleado" htmlFor="identifier" error={fe.identifier}>
@@ -25,6 +25,6 @@ export function SignInForm({ next }: { next: string }) {
       <p className="text-center text-sm">
         <Link href="/recuperar" className="font-medium text-brand-700 hover:underline">Olvidé mi contraseña</Link>
       </p>
-    </form>
+    </KeepForm>
   );
 }

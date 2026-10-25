@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useActionState } from "react";
 import type { ActionResult } from "@/lib/action";
 import { Alert, Field } from "@/components/ui";
-import { SubmitButton } from "@/components/ui/client";
+import { SubmitButton, KeepForm } from "@/components/ui/client";
 
 export type CourseFormValues = {
   code?: string; title?: string; description?: string | null; owner_company_id?: string | null; default_requirement?: string;
@@ -20,7 +20,7 @@ export function CourseForm({ action, initial = {}, companies, mode, allowGroup =
   const fe = state && !state.ok ? state.error.fieldErrors ?? {} : {};
   const inp = (n: string) => ({ id: n, name: n, "aria-invalid": !!fe[n] });
   return (
-    <form action={formAction} className="space-y-5" noValidate>
+    <KeepForm action={formAction} state={state} className="space-y-5" noValidate>
       {state && !state.ok && <Alert kind="error">{state.error.message}</Alert>}
       {state?.ok && state.message && <Alert kind="success">{state.message}</Alert>}
       <div className="grid gap-4 sm:grid-cols-[180px_1fr]">
@@ -65,6 +65,6 @@ export function CourseForm({ action, initial = {}, companies, mode, allowGroup =
         {mode === "create" && <Link href="/admin/cursos" className="btn-ghost">Cancelar</Link>}
         <SubmitButton pendingText="Guardando…">{mode === "create" ? "Crear y seguir al contenido →" : "Guardar datos"}</SubmitButton>
       </div>
-    </form>
+    </KeepForm>
   );
 }

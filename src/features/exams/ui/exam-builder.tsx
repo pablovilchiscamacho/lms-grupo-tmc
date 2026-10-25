@@ -3,7 +3,7 @@ import { useActionState, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowDown, ArrowUp, ClipboardList, Download, FileSpreadsheet, Library, Loader2, Pencil, Plus, Shuffle, Trash2 } from "lucide-react";
 import { Alert, Badge, Card, EmptyState, Field } from "@/components/ui";
-import { Modal, SubmitButton } from "@/components/ui/client";
+import { Modal, SubmitButton, KeepForm } from "@/components/ui/client";
 import {
   addItems, addPool, commitQuestionImport, createExam, deleteExam, previewQuestionImport, removeItem, removePool, searchBank, updateExam, updateItem,
 } from "../actions";
@@ -217,10 +217,10 @@ export function ImportQuestions({ examId, defaultCategory, onDone }: { examId: s
   return (
     <div className="space-y-4">
       <a href="/plantillas/preguntas.xlsx" download className="btn-ghost -ml-2"><Download className="size-4" /> Descargar la plantilla de Excel (trae un ejemplo de cada tipo)</a>
-      <form action={action} className="flex flex-col gap-2 sm:flex-row sm:items-end">
+      <KeepForm action={action} state={state} className="flex flex-col gap-2 sm:flex-row sm:items-end">
         <div className="flex-1"><label htmlFor="qfile" className="label">Archivo .xlsx</label><input id="qfile" name="file" type="file" accept=".xlsx" required className="input" /></div>
         <SubmitButton className="btn-secondary" pendingText="Leyendo…">Revisar archivo</SubmitButton>
-      </form>
+      </KeepForm>
       {state && !state.ok && <Alert kind="error">{state.error.message}</Alert>}
       {rows.length > 0 && (
         <>

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useActionState } from "react";
 import { requestPasswordReset } from "@/features/auth/actions";
 import { Alert, Field } from "@/components/ui";
-import { SubmitButton } from "@/components/ui/client";
+import { SubmitButton, KeepForm } from "@/components/ui/client";
 
 export function RecoverForm() {
   const [state, action] = useActionState(requestPasswordReset, null);
@@ -18,7 +18,7 @@ export function RecoverForm() {
           <Link href="/entrar" className="btn-secondary w-full">Volver a entrar</Link>
         </div>
       ) : (
-        <form action={action} className="mt-6 space-y-4" noValidate>
+        <KeepForm action={action} state={state} className="mt-6 space-y-4" noValidate>
           {state && !state.ok && !state.error.fieldErrors && <Alert kind="error">{state.error.message}</Alert>}
           <Field label="Correo corporativo" htmlFor="email" error={fe.email}>
             <input id="email" name="email" type="email" className="input" autoComplete="email" autoFocus required aria-invalid={!!fe.email} />
@@ -26,7 +26,7 @@ export function RecoverForm() {
           <SubmitButton className="btn-primary w-full py-2.5" pendingText="Enviando…">Enviar enlace</SubmitButton>
           <Alert kind="info">¿No tienes correo corporativo? Pide a tu administrador o a Recursos Humanos que restablezca tu contraseña.</Alert>
           <p className="text-center text-sm"><Link href="/entrar" className="font-medium text-brand-700 hover:underline">Volver</Link></p>
-        </form>
+        </KeepForm>
       )}
     </>
   );
