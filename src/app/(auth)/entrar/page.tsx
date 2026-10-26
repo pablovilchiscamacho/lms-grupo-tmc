@@ -17,7 +17,7 @@ export default async function SignInPage({ searchParams }: PageProps<"/entrar">)
   return (
     <>
       <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Entrar</h1>
-      <p className="mt-1 text-sm text-slate-500">Usa tu correo corporativo o tu número de empleado.</p>
+      <p className="mt-1 text-sm text-slate-500">Usa tu correo, tu usuario o tu número de empleado.</p>
       {motivo && <div className="mt-5"><Alert kind={motivo.kind}>{motivo.text}</Alert></div>}
       <SignInForm next={typeof sp.next === "string" ? sp.next : ""} />
       <p className="mt-6 text-center text-xs text-slate-500"><a href="/privacidad" className="hover:underline">Aviso de privacidad</a></p>

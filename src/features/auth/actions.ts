@@ -21,7 +21,7 @@ function safeNext(next: FormDataEntryValue | null) {
 }
 
 const signInSchema = z.object({
-  identifier: z.string().trim().min(1, "Escribe tu correo o número de empleado").max(200),
+  identifier: z.string().trim().min(1, "Escribe tu correo, usuario o número de empleado").max(200),
   password: z.string().min(1, "Escribe tu contraseña").max(200),
 });
 

@@ -13,8 +13,8 @@ export function SignInForm({ next }: { next: string }) {
     <KeepForm action={action} state={state} className="mt-6 space-y-4" noValidate>
       <input type="hidden" name="next" value={next} />
       {state && !state.ok && !state.error.fieldErrors && <Alert kind="error">{state.error.message}</Alert>}
-      <Field label="Correo o número de empleado" htmlFor="identifier" error={fe.identifier}>
-        <input id="identifier" name="identifier" value={identifier} onChange={(e) => setIdentifier(e.target.value)} className="input" autoComplete="username" autoFocus required
+      <Field label="Correo, usuario o número de empleado" htmlFor="identifier" error={fe.identifier}>
+        <input id="identifier" name="identifier" value={identifier} onChange={(e) => setIdentifier(e.target.value)} className="input" autoComplete="username" autoCapitalize="none" autoCorrect="off" spellCheck={false} autoFocus required
           aria-invalid={!!fe.identifier} aria-describedby={fe.identifier ? "identifier-error" : undefined} />
       </Field>
       <Field label="Contraseña" htmlFor="password" error={fe.password}>
